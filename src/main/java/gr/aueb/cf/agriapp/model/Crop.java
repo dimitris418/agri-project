@@ -35,8 +35,6 @@ public class Crop extends AbstractEntity {
     @JoinColumn(name = "crop_type_id", nullable = false)
     private CropType cropType;
 
-    /** Ποικιλία, π.χ. "Σίμετο". Ελεύθερο κείμενο -- οι ποικιλίες
-     *  είναι πάρα πολλές και αλλάζουν συνεχώς. */
     private String variety;
 
     @Column(nullable = false)
