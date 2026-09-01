@@ -42,14 +42,12 @@ public class Crop extends AbstractEntity {
 
     private LocalDate plantingDate;
 
-    private LocalDate expectedHarvestDate;
-
     /**
-     * Πραγματική ημερομηνία συγκομιδής. Μένει null όσο η καλλιέργεια
-     * είναι ενεργή και συμπληρώνεται από το service όταν καταχωρηθεί
-     * εργασία τύπου HARVEST. Είναι το "κλείδωμα" της καλλιέργειας.
+     * Προγραμματισμένη ημερομηνία συγκομιδής. Είναι πρόβλεψη του παραγωγού,
+     * ΟΧΙ η πραγματική συγκομιδή: αυτή προκύπτει από την εργασία τύπου
+     * HARVEST στο ημερολόγιο και δεν αποθηκεύεται δεύτερη φορά εδώ.
      */
-    private LocalDate harvestDate;
+    private LocalDate expectedHarvestDate;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parcel_id", nullable = false)
@@ -75,10 +73,6 @@ public class Crop extends AbstractEntity {
         if (activities == null) return;
         activities.remove(activity);
         activity.setCrop(null);
-    }
-
-    public boolean isHarvested() {
-        return harvestDate != null;
     }
 
     @PrePersist
