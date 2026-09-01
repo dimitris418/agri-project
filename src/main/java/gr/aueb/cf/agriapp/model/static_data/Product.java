@@ -33,7 +33,7 @@ public class Product {
     @Column(unique = true, nullable = false)
     private String name;
 
-    /** Δραστική ουσία ή τύπος λιπάσματος. */
+    @Column(unique = true, nullable = false)
     private String activeSubstance;
 
     @Enumerated(EnumType.STRING)
