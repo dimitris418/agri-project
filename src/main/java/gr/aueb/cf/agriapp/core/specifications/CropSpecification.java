@@ -13,10 +13,6 @@ public class CropSpecification {
     private CropSpecification() {
     }
 
-    /**
-     * Ιδιοκτησία μέσω δύο joins: crop -> parcel -> farmer. Χωρίς έλεγχο για
-     * null, ώστε να αποτυγχάνει κλειστά.
-     */
     public static Specification<Crop> cropFarmerIdIs(Long farmerId) {
         return (root, query, builder) -> {
             Join<Crop, Parcel> parcel = root.join("parcel");

@@ -11,11 +11,6 @@ public class ParcelSpecification {
     private ParcelSpecification() {
     }
 
-    /**
-     * Περιορισμός ιδιοκτησίας. ΔΕΝ έχει έλεγχο για null: αν κάποιος ξεχάσει
-     * να περάσει farmerId, το query δεν επιστρέφει τίποτα αντί να επιστρέψει
-     * τα πάντα. Αποτυγχάνει κλειστά, όχι ανοιχτά.
-     */
     public static Specification<Parcel> parcelFarmerIdIs(Long farmerId) {
         return (root, query, builder) -> {
             Join<Parcel, Farmer> farmer = root.join("farmer");

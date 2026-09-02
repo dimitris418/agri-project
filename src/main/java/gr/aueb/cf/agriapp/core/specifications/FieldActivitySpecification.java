@@ -16,11 +16,6 @@ public class FieldActivitySpecification {
     private FieldActivitySpecification() {
     }
 
-    /**
-     * Ιδιοκτησία μέσω τριών joins: activity -> crop -> parcel -> farmer.
-     * Αυτή είναι η αλυσίδα που κάνει το μοντέλο να δουλεύει: όσο βαθιά κι αν
-     * είναι μια εγγραφή, ο ιδιοκτήτης της βρίσκεται με ένα query.
-     */
     public static Specification<FieldActivity> activityFarmerIdIs(Long farmerId) {
         return (root, query, builder) -> {
             Join<FieldActivity, Crop> crop = root.join("crop");

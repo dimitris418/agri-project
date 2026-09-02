@@ -17,11 +17,6 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Κεντρικός χειριστής σφαλμάτων. Κάθε exception που ξεφεύγει από controller
- * περνάει από εδώ και μετατρέπεται σε HTTP status με τυποποιημένο σώμα, ώστε
- * οι controllers να μην περιέχουν try/catch.
- */
 @ControllerAdvice
 @Slf4j
 public class ErrorHandler extends ResponseEntityExceptionHandler {
