@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -16,6 +17,8 @@ public interface FieldActivityRepository extends JpaRepository<FieldActivity, Lo
     Optional<FieldActivity> findByUuid(String uuid);
 
     List<FieldActivity> findByCropIdOrderByActivityDateDesc(Long cropId);
+
+    List<FieldActivity> findByCropIdInAndType(Collection<Long> cropIds, ActivityType type);
 
     /**
      * Η πιο πρόσφατη εργασία ενός τύπου για μια καλλιέργεια. Χρησιμοποιείται
