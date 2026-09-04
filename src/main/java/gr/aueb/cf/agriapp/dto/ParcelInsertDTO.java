@@ -20,7 +20,7 @@ public record ParcelInsertDTO(
         @DecimalMin(value = "0.01", message = "Area must be greater than zero")
         BigDecimal areaInStremmas,
 
-        @Pattern(regexp = "^$|^\\d{12,15}$", message = "KAEK must be a 12 to 15 digit number")
+        @Pattern(regexp = "^$|^\\d{12}$", message = "KAEK must be a 12-digit number")
         String kaek,
 
         @NotNull(message = "isActive field is required")
