@@ -14,9 +14,6 @@ public record FarmerInsertDTO(
         @Pattern(regexp = "^$|^\\d{10}$", message = "Phone must be a 10-digit number")
         String phone,
 
-        @NotNull(message = "isActive field is required")
-        Boolean isActive,
-
         @Valid
         @NotNull(message = "User details are required")
         UserInsertDTO userInsertDTO
