@@ -3,6 +3,7 @@ package gr.aueb.cf.agriapp.dto;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.Builder;
 
 import java.time.LocalDate;
@@ -19,6 +20,7 @@ public record CropUpdateDTO(
         @NotNull(message = "Crop type is required")
         Long cropTypeId,
 
+        @Size(max = 50, message = "Variety cannot exceed 50 characters")
         String variety,
 
         @NotNull(message = "Cultivation year is required")

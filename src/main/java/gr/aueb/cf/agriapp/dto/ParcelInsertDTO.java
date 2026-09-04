@@ -4,6 +4,7 @@ import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.Builder;
 
 import java.math.BigDecimal;
@@ -12,8 +13,10 @@ import java.math.BigDecimal;
 public record ParcelInsertDTO(
 
         @NotEmpty(message = "Parcel name is required")
+        @Size(min = 2, max = 100, message = "Parcel name must be between 2 and 100 characters")
         String name,
 
+        @Size(max = 100, message = "Location cannot exceed 100 characters")
         String location,
 
         @NotNull(message = "Area is required")

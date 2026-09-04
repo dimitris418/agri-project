@@ -4,6 +4,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.Builder;
 
 @Builder
@@ -13,9 +14,11 @@ public record UserUpdateDTO(
         Long id,
 
         @NotEmpty(message = "First name is required")
+        @Size(min = 2, max = 50, message = "First name must be between 2 and 50 characters")
         String firstname,
 
         @NotEmpty(message = "Last name is required")
+        @Size(min = 2, max = 50, message = "Last name must be between 2 and 50 characters")
         String lastname,
 
         @Email(message = "Invalid username")
