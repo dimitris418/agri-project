@@ -8,6 +8,7 @@ import gr.aueb.cf.agriapp.dto.ParcelReadOnlyDTO;
 import gr.aueb.cf.agriapp.dto.ParcelUpdateDTO;
 import gr.aueb.cf.agriapp.service.IParcelService;
 import jakarta.validation.Valid;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -18,6 +19,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.net.URI;
 
 @RestController
+@SecurityRequirement(name = "Bearer Authentication")
 @RequestMapping("/api/parcels")
 @RequiredArgsConstructor
 public class ParcelRestController {

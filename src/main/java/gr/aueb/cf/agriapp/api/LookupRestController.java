@@ -7,6 +7,7 @@ import gr.aueb.cf.agriapp.dto.CropTypeReadOnlyDTO;
 import gr.aueb.cf.agriapp.dto.PestReadOnlyDTO;
 import gr.aueb.cf.agriapp.dto.ProductReadOnlyDTO;
 import gr.aueb.cf.agriapp.service.ILookupService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.Nullable;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
+@SecurityRequirement(name = "Bearer Authentication")
 @RequestMapping("/api/lookups")
 @RequiredArgsConstructor
 public class LookupRestController {

@@ -6,6 +6,7 @@ import gr.aueb.cf.agriapp.dto.FarmerReadOnlyDTO;
 import gr.aueb.cf.agriapp.dto.FarmerUpdateDTO;
 import gr.aueb.cf.agriapp.service.IFarmerService;
 import jakarta.validation.Valid;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -40,6 +41,7 @@ public class FarmerRestController {
         return ResponseEntity.created(location).body(created);
     }
 
+    @SecurityRequirement(name = "Bearer Authentication")
     @GetMapping("/me")
     public ResponseEntity<FarmerReadOnlyDTO> getCurrentFarmer(Authentication authentication)
             throws AppObjectNotFoundException {
@@ -47,6 +49,7 @@ public class FarmerRestController {
         return ResponseEntity.ok(farmerService.getFarmerByUsername(authentication.getName()));
     }
 
+    @SecurityRequirement(name = "Bearer Authentication")
     @PutMapping("/me")
     public ResponseEntity<FarmerReadOnlyDTO> updateCurrentFarmer(
             @Valid @RequestBody FarmerUpdateDTO dto,
