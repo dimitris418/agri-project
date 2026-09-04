@@ -16,6 +16,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -31,6 +32,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final UserDetailsService userDetailsService;
+    private final AuthenticationEntryPoint authenticationEntryPoint;
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,
@@ -63,11 +65,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }
         } catch (ExpiredJwtException e) {
-            throw new AuthenticationCredentialsNotFoundException("Expired token", e);
+            // Ο filter τρέχει πριν το ExceptionTranslationFilter, οπότε ό,τι
+            // πετάξει εδώ δεν φτάνει ποτέ στον entry point. Τον καλούμε ρητά.
+            rejectWith(request, response, new AuthenticationCredentialsNotFoundException("Expired token", e));
+            return;
         } catch (JwtException | IllegalArgumentException e) {
-            throw new BadCredentialsException("Invalid token");
+            rejectWith(request, response, new BadCredentialsException("Invalid token"));
+            return;
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    private void rejectWith(HttpServletRequest request, HttpServletResponse response,
+                            org.springframework.security.core.AuthenticationException e)
+            throws IOException, ServletException {
+        SecurityContextHolder.clearContext();
+        authenticationEntryPoint.commence(request, response, e);
     }
 }
