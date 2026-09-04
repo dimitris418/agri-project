@@ -38,12 +38,12 @@ public class Mapper {
         user.setUsername(userDTO.username());
         user.setPassword(passwordEncoder.encode(userDTO.password()));
         user.setVat(userDTO.vat());
-        user.setIsActive(dto.isActive());
+        user.setIsActive(true);
 
         Farmer farmer = new Farmer();
         farmer.setRegistryNumber(dto.registryNumber());
         farmer.setPhone(dto.phone());
-        farmer.setIsActive(dto.isActive());
+        farmer.setIsActive(true);
         farmer.setUser(user);
 
         return farmer;
