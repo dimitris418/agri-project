@@ -235,4 +235,43 @@ class FieldActivityRestControllerTest {
         mockMvc.perform(get("/api/activities").header("Authorization", token))
                 .andExpect(jsonPath("$.totalElements").value(0));
     }
+
+    @Test
+    @DisplayName("Η ενημέρωση εργασίας αλλάζει δόση και σημειώσεις")
+    void updatingAnActivityChangesItsDoseAndNotes() throws Exception {
+        JsonNode created = create("/api/activities", spraying(SPRAY_DATE));
+
+        FieldActivityUpdateDTO dto = FieldActivityUpdateDTO.builder()
+                .id(created.get("id").asLong()).uuid(created.get("uuid").asText())
+                .activityDate(SPRAY_DATE).type(ActivityType.SPRAYING)
+                .productId(fungicideId).quantity(new BigDecimal("2.5")).unit(UnitOfMeasure.LITRE)
+                .notes("Δεύτερη επέμβαση μετά τη βροχή")
+                .build();
+
+        mockMvc.perform(put("/api/activities/" + dto.uuid())
+                        .header("Authorization", token)
+                        .contentType(MediaType.APPLICATION_JSON).content(json(dto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.notes").value("Δεύτερη επέμβαση μετά τη βροχή"))
+                .andExpect(jsonPath("$.unit").value("LITRE"));
+    }
+
+    @Test
+    @DisplayName("Μετάθεση ψεκασμού που παραβιάζει τον χρόνο αναμονής απορρίπτεται")
+    void movingASprayingIntoTheIntervalIsRejected() throws Exception {
+        JsonNode spray = create("/api/activities", spraying(SPRAY_DATE));
+        create("/api/activities", harvest(SPRAY_DATE.plusDays(PHI_DAYS)));
+
+        FieldActivityUpdateDTO dto = FieldActivityUpdateDTO.builder()
+                .id(spray.get("id").asLong()).uuid(spray.get("uuid").asText())
+                .activityDate(SPRAY_DATE.plusDays(1)).type(ActivityType.SPRAYING)
+                .productId(fungicideId).quantity(new BigDecimal("1.5")).unit(UnitOfMeasure.LITRE)
+                .build();
+
+        mockMvc.perform(put("/api/activities/" + dto.uuid())
+                        .header("Authorization", token)
+                        .contentType(MediaType.APPLICATION_JSON).content(json(dto)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("ActivityInvalidArgument"));
+    }
 }
