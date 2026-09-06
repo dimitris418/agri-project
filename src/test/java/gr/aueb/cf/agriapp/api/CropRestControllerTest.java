@@ -152,6 +152,7 @@ class CropRestControllerTest {
                 .andExpect(header().exists("Location"))
                 .andExpect(jsonPath("$.cropTypeReadOnlyDTO.name").value("Σκληρό σιτάρι"))
                 .andExpect(jsonPath("$.cropTypeReadOnlyDTO.season").value("WINTER"))
+                .andExpect(jsonPath("$.parcelReadOnlyDTO.name").value("Κάτω χωράφι"))
                 .andExpect(jsonPath("$.harvestDate").doesNotExist());
     }
 
@@ -240,7 +241,8 @@ class CropRestControllerTest {
                         .param("cultivationYear", "2026"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.totalElements").value(1))
-                .andExpect(jsonPath("$.data[0].cropTypeReadOnlyDTO.name").value("Αραβόσιτος"));
+                .andExpect(jsonPath("$.data[0].cropTypeReadOnlyDTO.name").value("Αραβόσιτος"))
+                .andExpect(jsonPath("$.data[0].parcelReadOnlyDTO.name").value("Κάτω χωράφι"));
 
         mockMvc.perform(get("/api/crops").header("Authorization", token)
                         .param("parcelUuid", otherParcelUuid))

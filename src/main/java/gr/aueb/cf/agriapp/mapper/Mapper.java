@@ -151,6 +151,7 @@ public class Mapper {
         return CropReadOnlyDTO.builder()
                 .id(crop.getId())
                 .uuid(crop.getUuid())
+                .parcelReadOnlyDTO(mapToParcelReadOnlyDTO(crop.getParcel()))
                 .cropTypeReadOnlyDTO(mapToCropTypeReadOnlyDTO(crop.getCropType()))
                 .variety(crop.getVariety())
                 .cultivationYear(crop.getCultivationYear())

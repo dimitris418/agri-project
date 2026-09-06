@@ -8,6 +8,7 @@ import java.time.LocalDate;
 public record CropReadOnlyDTO(
         Long id,
         String uuid,
+        ParcelReadOnlyDTO parcelReadOnlyDTO,
         CropTypeReadOnlyDTO cropTypeReadOnlyDTO,
         String variety,
         Integer cultivationYear,
