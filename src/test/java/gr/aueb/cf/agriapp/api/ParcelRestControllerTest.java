@@ -261,6 +261,7 @@ class ParcelRestControllerTest {
     @Test
     @DisplayName("Η λίστα φιλτράρεται ανά τοποθεσία, χωρίς διάκριση πεζών")
     void theListIsFilteredByLocation() throws Exception {
+        register(OWNER, "111111111");
         String token = tokenFor(OWNER);
         createParcel(token, "Κάτω χωράφι", "123456789012");
 
