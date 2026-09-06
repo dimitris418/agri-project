@@ -257,4 +257,28 @@ class ParcelRestControllerTest {
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.code").value("UserNotAuthorized"));
     }
+
+    @Test
+    @DisplayName("Η λίστα φιλτράρεται ανά τοποθεσία, χωρίς διάκριση πεζών")
+    void theListIsFilteredByLocation() throws Exception {
+        String token = tokenFor(OWNER);
+        createParcel(token, "Κάτω χωράφι", "123456789012");
+
+        mockMvc.perform(post("/api/parcels")
+                        .header("Authorization", token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json(ParcelInsertDTO.builder()
+                                .name("Ορεινό").location("Τρίκαλα")
+                                .areaInStremmas(new BigDecimal("10.00"))
+                                .kaek("999999999999").isActive(true)
+                                .build())))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(get("/api/parcels")
+                        .header("Authorization", token)
+                        .param("location", "καλα"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalElements").value(1))
+                .andExpect(jsonPath("$.data[0].name").value("Ορεινό"));
+    }
 }

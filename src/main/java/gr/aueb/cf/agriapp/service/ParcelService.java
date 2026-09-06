@@ -131,6 +131,7 @@ public class ParcelService implements IParcelService {
         return ParcelSpecification.parcelFarmerIdIs(farmerId)
                 .and(ParcelSpecification.parcelStringFieldLike("uuid", filters.getUuid()))
                 .and(ParcelSpecification.parcelStringFieldLike("name", filters.getName()))
+                .and(ParcelSpecification.parcelStringFieldLike("location", filters.getLocation()))
                 .and(ParcelSpecification.parcelStringFieldLike("kaek", filters.getKaek()))
                 .and(ParcelSpecification.parcelIsActive(filters.getActive()));
     }
