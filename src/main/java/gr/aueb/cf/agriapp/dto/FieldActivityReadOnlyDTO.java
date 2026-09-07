@@ -9,6 +9,7 @@ import java.time.LocalDate;
 public record FieldActivityReadOnlyDTO(
         Long id,
         String uuid,
+        CropReadOnlyDTO cropReadOnlyDTO,
         LocalDate activityDate,
         String type,
         ProductReadOnlyDTO productReadOnlyDTO,

@@ -2,6 +2,10 @@ package gr.aueb.cf.agriapp.repository;
 
 import gr.aueb.cf.agriapp.core.enums.ActivityType;
 import gr.aueb.cf.agriapp.model.FieldActivity;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
@@ -27,4 +31,13 @@ public interface FieldActivityRepository extends JpaRepository<FieldActivity, Lo
      */
     Optional<FieldActivity> findFirstByCropIdAndTypeOrderByActivityDateDesc(
             Long cropId, ActivityType type);
+
+    /**
+     * Το ReadOnly DTO περιλαμβάνει καλλιέργεια, σκεύασμα και εχθρό, που είναι
+     * όλα LAZY. Χωρίς το entity graph κάθε γραμμή της σελίδας θα εκτελούσε
+     * δικά της queries.
+     */
+    @Override
+    @EntityGraph(attributePaths = {"crop", "crop.parcel", "crop.cropType", "product", "pest"})
+    Page<FieldActivity> findAll(Specification<FieldActivity> spec, Pageable pageable);
 }

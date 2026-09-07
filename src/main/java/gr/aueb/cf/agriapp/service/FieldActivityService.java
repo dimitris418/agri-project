@@ -27,6 +27,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -57,7 +59,7 @@ public class FieldActivityService implements IFieldActivityService {
         FieldActivity saved = fieldActivityRepository.save(candidate);
         log.info("Activity type={} recorded on crop={}", saved.getType(), crop.getUuid());
 
-        return mapper.mapToFieldActivityReadOnlyDTO(saved);
+        return mapper.mapToFieldActivityReadOnlyDTO(saved, findHarvestDate(saved.getCrop().getId()));
     }
 
     @Override
@@ -79,7 +81,7 @@ public class FieldActivityService implements IFieldActivityService {
         FieldActivity updated = fieldActivityRepository.save(candidate);
         log.info("Activity with uuid={} updated", updated.getUuid());
 
-        return mapper.mapToFieldActivityReadOnlyDTO(updated);
+        return mapper.mapToFieldActivityReadOnlyDTO(updated, findHarvestDate(updated.getCrop().getId()));
     }
 
     @Override
@@ -87,7 +89,8 @@ public class FieldActivityService implements IFieldActivityService {
     public FieldActivityReadOnlyDTO getActivity(String uuid, String username)
             throws AppObjectNotFoundException, AppObjectNotAuthorizedException {
 
-        return mapper.mapToFieldActivityReadOnlyDTO(getOwnedActivity(uuid, getFarmer(username)));
+        FieldActivity activity = getOwnedActivity(uuid, getFarmer(username));
+        return mapper.mapToFieldActivityReadOnlyDTO(activity, findHarvestDate(activity.getCrop().getId()));
     }
 
     @Override
@@ -98,7 +101,12 @@ public class FieldActivityService implements IFieldActivityService {
         Farmer farmer = getFarmer(username);
         var filtered = fieldActivityRepository.findAll(buildSpecification(filters, farmer.getId()), filters.getPageable());
 
-        return Paginated.fromPage(filtered.map(mapper::mapToFieldActivityReadOnlyDTO));
+        // Μία ερώτηση για τις συγκομιδές όλων των καλλιεργειών της σελίδας,
+        // αντί για μία ανά εργασία.
+        Map<Long, LocalDate> harvestDates = findHarvestDates(filtered.getContent());
+
+        return Paginated.fromPage(filtered.map(a ->
+                mapper.mapToFieldActivityReadOnlyDTO(a, harvestDates.get(a.getCrop().getId()))));
     }
 
     @Override
@@ -109,6 +117,23 @@ public class FieldActivityService implements IFieldActivityService {
         FieldActivity activity = getOwnedActivity(uuid, getFarmer(username));
         fieldActivityRepository.delete(activity);
         log.info("Activity with uuid={} deleted", uuid);
+    }
+
+    private LocalDate findHarvestDate(Long cropId) {
+        return fieldActivityRepository
+                .findFirstByCropIdAndTypeOrderByActivityDateDesc(cropId, ActivityType.HARVEST)
+                .map(FieldActivity::getActivityDate)
+                .orElse(null);
+    }
+
+    private Map<Long, LocalDate> findHarvestDates(List<FieldActivity> activities) {
+        if (activities.isEmpty()) return Map.of();
+
+        List<Long> cropIds = activities.stream().map(a -> a.getCrop().getId()).distinct().toList();
+        return fieldActivityRepository.findByCropIdInAndType(cropIds, ActivityType.HARVEST).stream()
+                .collect(Collectors.toMap(a -> a.getCrop().getId(),
+                        FieldActivity::getActivityDate,
+                        (x, y) -> x));
     }
 
     private void assertFieldsRequiredByType(FieldActivity a) throws AppObjectInvalidArgumentException {

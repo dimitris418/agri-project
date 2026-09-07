@@ -198,10 +198,12 @@ public class Mapper {
         return activity;
     }
 
-    public FieldActivityReadOnlyDTO mapToFieldActivityReadOnlyDTO(FieldActivity activity) {
+    public FieldActivityReadOnlyDTO mapToFieldActivityReadOnlyDTO(FieldActivity activity,
+                                                                  LocalDate cropHarvestDate) {
         return FieldActivityReadOnlyDTO.builder()
                 .id(activity.getId())
                 .uuid(activity.getUuid())
+                .cropReadOnlyDTO(mapToCropReadOnlyDTO(activity.getCrop(), cropHarvestDate))
                 .activityDate(activity.getActivityDate())
                 .type(name(activity.getType()))
                 .productReadOnlyDTO(mapToProductReadOnlyDTO(activity.getProduct()))

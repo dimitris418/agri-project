@@ -158,7 +158,9 @@ class FieldActivityRestControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(header().exists("Location"))
                 .andExpect(jsonPath("$.type").value("SPRAYING"))
-                .andExpect(jsonPath("$.productReadOnlyDTO.preHarvestIntervalDays").value(PHI_DAYS));
+                .andExpect(jsonPath("$.productReadOnlyDTO.preHarvestIntervalDays").value(PHI_DAYS))
+                .andExpect(jsonPath("$.cropReadOnlyDTO.cropTypeReadOnlyDTO.name").value("Σκληρό σιτάρι"))
+                .andExpect(jsonPath("$.cropReadOnlyDTO.parcelReadOnlyDTO.name").value("Κάτω χωράφι"));
     }
 
     @Test
@@ -214,7 +216,8 @@ class FieldActivityRestControllerTest {
                         .param("type", "SPRAYING"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.totalElements").value(1))
-                .andExpect(jsonPath("$.data[0].type").value("SPRAYING"));
+                .andExpect(jsonPath("$.data[0].type").value("SPRAYING"))
+                .andExpect(jsonPath("$.data[0].cropReadOnlyDTO.parcelReadOnlyDTO.name").value("Κάτω χωράφι"));
 
         mockMvc.perform(get("/api/activities")
                         .header("Authorization", token)
