@@ -12,8 +12,10 @@ import gr.aueb.cf.agriapp.dto.ParcelUpdateDTO;
 import gr.aueb.cf.agriapp.mapper.Mapper;
 import gr.aueb.cf.agriapp.model.Farmer;
 import gr.aueb.cf.agriapp.model.Parcel;
+import gr.aueb.cf.agriapp.model.static_data.RegionalUnit;
 import gr.aueb.cf.agriapp.repository.FarmerRepository;
 import gr.aueb.cf.agriapp.repository.ParcelRepository;
+import gr.aueb.cf.agriapp.repository.RegionalUnitRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.jpa.domain.Specification;
@@ -27,6 +29,7 @@ public class ParcelService implements IParcelService {
 
     private final ParcelRepository parcelRepository;
     private final FarmerRepository farmerRepository;
+    private final RegionalUnitRepository regionalUnitRepository;
     private final Mapper mapper;
 
     @Override
@@ -37,7 +40,8 @@ public class ParcelService implements IParcelService {
         Farmer farmer = getFarmer(username);
         assertKaekIsFree(dto.kaek(), null);
 
-        Parcel saved = parcelRepository.save(mapper.mapToParcelEntity(dto, farmer));
+        Parcel saved = parcelRepository.save(
+                mapper.mapToParcelEntity(dto, farmer, getRegionalUnit(dto.regionalUnitId())));
         log.info("Parcel with uuid={} created for username={}", saved.getUuid(), username);
 
         return mapper.mapToParcelReadOnlyDTO(saved);
@@ -53,7 +57,7 @@ public class ParcelService implements IParcelService {
 
         assertKaekIsFree(dto.kaek(), existing.getId());
 
-        Parcel toUpdate = mapper.mapToParcelEntity(dto, farmer);
+        Parcel toUpdate = mapper.mapToParcelEntity(dto, farmer, getRegionalUnit(dto.regionalUnitId()));
         toUpdate.setId(existing.getId());
 
         Parcel updated = parcelRepository.save(toUpdate);
@@ -127,11 +131,18 @@ public class ParcelService implements IParcelService {
         }
     }
 
+    private RegionalUnit getRegionalUnit(Long id) throws AppObjectNotFoundException {
+        if (id == null) return null;
+        return regionalUnitRepository.findById(id)
+                .orElseThrow(() -> new AppObjectNotFoundException("RegionalUnit",
+                        "Regional unit with id " + id + " not found"));
+    }
+
     private Specification<Parcel> buildSpecification(ParcelFilters filters, Long farmerId) {
         return ParcelSpecification.parcelFarmerIdIs(farmerId)
                 .and(ParcelSpecification.parcelStringFieldLike("uuid", filters.getUuid()))
                 .and(ParcelSpecification.parcelStringFieldLike("name", filters.getName()))
-                .and(ParcelSpecification.parcelStringFieldLike("location", filters.getLocation()))
+                .and(ParcelSpecification.parcelRegionalUnitIs(filters.getRegionalUnitId()))
                 .and(ParcelSpecification.parcelStringFieldLike("kaek", filters.getKaek()))
                 .and(ParcelSpecification.parcelIsActive(filters.getActive()));
     }

@@ -20,7 +20,7 @@ public class ParcelFilters extends GenericFilters {
     private String name;
 
     @Nullable
-    private String location;
+    private Long regionalUnitId;
 
     @Nullable
     private String kaek;
@@ -30,6 +30,6 @@ public class ParcelFilters extends GenericFilters {
 
     @Override
     protected Set<String> getAllowedSortColumns() {
-        return Set.of("id", "name", "location", "kaek", "areaInStremmas", "createdAt");
+        return Set.of("id", "name", "regionalUnit.name", "kaek", "areaInStremmas", "createdAt");
     }
 }

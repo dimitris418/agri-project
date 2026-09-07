@@ -9,7 +9,7 @@ public record ParcelReadOnlyDTO(
         Long id,
         String uuid,
         String name,
-        String location,
+        RegionalUnitReadOnlyDTO regionalUnitReadOnlyDTO,
         BigDecimal areaInStremmas,
         String kaek,
         Boolean isActive

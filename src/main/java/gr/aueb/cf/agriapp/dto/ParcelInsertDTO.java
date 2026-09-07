@@ -16,8 +16,7 @@ public record ParcelInsertDTO(
         @Size(min = 2, max = 100, message = "Parcel name must be between 2 and 100 characters")
         String name,
 
-        @Size(max = 100, message = "Location cannot exceed 100 characters")
-        String location,
+        Long regionalUnitId,
 
         @NotNull(message = "Area is required")
         @DecimalMin(value = "0.01", message = "Area must be greater than zero")

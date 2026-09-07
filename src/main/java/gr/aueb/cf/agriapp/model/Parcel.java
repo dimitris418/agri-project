@@ -1,5 +1,6 @@
 package gr.aueb.cf.agriapp.model;
 
+import gr.aueb.cf.agriapp.model.static_data.RegionalUnit;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
@@ -34,7 +35,10 @@ public class Parcel extends AbstractEntity {
     @Column(nullable = false)
     private String name;
 
-    private String location;
+    /** Τοποθεσία σε επίπεδο περιφερειακής ενότητας, από τον κατάλογο. */
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "regional_unit_id")
+    private RegionalUnit regionalUnit;
 
     /** Έκταση σε στρέμματα. */
     @Column(precision = 10, scale = 2)

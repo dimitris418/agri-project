@@ -5,6 +5,8 @@ import gr.aueb.cf.agriapp.model.*;
 import gr.aueb.cf.agriapp.model.static_data.CropType;
 import gr.aueb.cf.agriapp.model.static_data.Pest;
 import gr.aueb.cf.agriapp.model.static_data.Product;
+import gr.aueb.cf.agriapp.model.static_data.Region;
+import gr.aueb.cf.agriapp.model.static_data.RegionalUnit;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -86,10 +88,10 @@ public class Mapper {
     }
 
     // --------------------------------------------------------------- Parcel
-    public Parcel mapToParcelEntity(ParcelInsertDTO dto, Farmer farmer) {
+    public Parcel mapToParcelEntity(ParcelInsertDTO dto, Farmer farmer, RegionalUnit regionalUnit) {
         Parcel parcel = new Parcel();
         parcel.setName(dto.name());
-        parcel.setLocation(dto.location());
+        parcel.setRegionalUnit(regionalUnit);
         parcel.setAreaInStremmas(dto.areaInStremmas());
         parcel.setKaek(blankToNull(dto.kaek()));
         parcel.setIsActive(dto.isActive());
@@ -97,12 +99,12 @@ public class Mapper {
         return parcel;
     }
 
-    public Parcel mapToParcelEntity(ParcelUpdateDTO dto, Farmer farmer) {
+    public Parcel mapToParcelEntity(ParcelUpdateDTO dto, Farmer farmer, RegionalUnit regionalUnit) {
         Parcel parcel = new Parcel();
         parcel.setId(dto.id());
         parcel.setUuid(dto.uuid());
         parcel.setName(dto.name());
-        parcel.setLocation(dto.location());
+        parcel.setRegionalUnit(regionalUnit);
         parcel.setAreaInStremmas(dto.areaInStremmas());
         parcel.setKaek(blankToNull(dto.kaek()));
         parcel.setIsActive(dto.isActive());
@@ -115,7 +117,7 @@ public class Mapper {
                 .id(parcel.getId())
                 .uuid(parcel.getUuid())
                 .name(parcel.getName())
-                .location(parcel.getLocation())
+                .regionalUnitReadOnlyDTO(mapToRegionalUnitReadOnlyDTO(parcel.getRegionalUnit()))
                 .areaInStremmas(parcel.getAreaInStremmas())
                 .kaek(parcel.getKaek())
                 .isActive(parcel.getIsActive())
@@ -216,6 +218,23 @@ public class Mapper {
     }
 
     // -------------------------------------------------------------- Lookups
+    public RegionReadOnlyDTO mapToRegionReadOnlyDTO(Region region) {
+        if (region == null) return null;
+        return RegionReadOnlyDTO.builder()
+                .id(region.getId())
+                .name(region.getName())
+                .build();
+    }
+
+    public RegionalUnitReadOnlyDTO mapToRegionalUnitReadOnlyDTO(RegionalUnit unit) {
+        if (unit == null) return null;
+        return RegionalUnitReadOnlyDTO.builder()
+                .id(unit.getId())
+                .name(unit.getName())
+                .regionReadOnlyDTO(mapToRegionReadOnlyDTO(unit.getRegion()))
+                .build();
+    }
+
     public CropTypeReadOnlyDTO mapToCropTypeReadOnlyDTO(CropType cropType) {
         if (cropType == null) return null;
         return CropTypeReadOnlyDTO.builder()

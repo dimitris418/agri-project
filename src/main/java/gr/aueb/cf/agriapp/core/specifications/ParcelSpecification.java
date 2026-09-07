@@ -2,6 +2,7 @@ package gr.aueb.cf.agriapp.core.specifications;
 
 import gr.aueb.cf.agriapp.model.Farmer;
 import gr.aueb.cf.agriapp.model.Parcel;
+import gr.aueb.cf.agriapp.model.static_data.RegionalUnit;
 import jakarta.persistence.criteria.Join;
 import org.springframework.data.jpa.domain.Specification;
 
@@ -22,6 +23,14 @@ public class ParcelSpecification {
         return (root, query, builder) -> {
             if (isActive == null) return builder.isTrue(builder.literal(true));
             return builder.equal(root.get("isActive"), isActive);
+        };
+    }
+
+    public static Specification<Parcel> parcelRegionalUnitIs(Long regionalUnitId) {
+        return (root, query, builder) -> {
+            if (regionalUnitId == null) return builder.isTrue(builder.literal(true));
+            Join<Parcel, RegionalUnit> unit = root.join("regionalUnit");
+            return builder.equal(unit.get("id"), regionalUnitId);
         };
     }
 
