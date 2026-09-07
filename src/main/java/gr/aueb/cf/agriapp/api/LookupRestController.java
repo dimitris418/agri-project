@@ -5,6 +5,7 @@ import gr.aueb.cf.agriapp.core.enums.PestType;
 import gr.aueb.cf.agriapp.core.enums.ProductCategory;
 import gr.aueb.cf.agriapp.dto.CropTypeReadOnlyDTO;
 import gr.aueb.cf.agriapp.dto.PestReadOnlyDTO;
+import gr.aueb.cf.agriapp.dto.RegionalUnitReadOnlyDTO;
 import gr.aueb.cf.agriapp.dto.ProductReadOnlyDTO;
 import gr.aueb.cf.agriapp.service.ILookupService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -39,5 +40,10 @@ public class LookupRestController {
     public ResponseEntity<List<PestReadOnlyDTO>> getPests(
             @Nullable @RequestParam(required = false) PestType type) {
         return ResponseEntity.ok(lookupService.getPests(type));
+    }
+
+    @GetMapping("/regional-units")
+    public ResponseEntity<List<RegionalUnitReadOnlyDTO>> getRegionalUnits() {
+        return ResponseEntity.ok(lookupService.getRegionalUnits());
     }
 }

@@ -5,11 +5,13 @@ import gr.aueb.cf.agriapp.core.enums.PestType;
 import gr.aueb.cf.agriapp.core.enums.ProductCategory;
 import gr.aueb.cf.agriapp.dto.CropTypeReadOnlyDTO;
 import gr.aueb.cf.agriapp.dto.PestReadOnlyDTO;
+import gr.aueb.cf.agriapp.dto.RegionalUnitReadOnlyDTO;
 import gr.aueb.cf.agriapp.dto.ProductReadOnlyDTO;
 import gr.aueb.cf.agriapp.mapper.Mapper;
 import gr.aueb.cf.agriapp.repository.CropTypeRepository;
 import gr.aueb.cf.agriapp.repository.PestRepository;
 import gr.aueb.cf.agriapp.repository.ProductRepository;
+import gr.aueb.cf.agriapp.repository.RegionalUnitRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +25,7 @@ public class LookupService implements ILookupService {
     private final CropTypeRepository cropTypeRepository;
     private final ProductRepository productRepository;
     private final PestRepository pestRepository;
+    private final RegionalUnitRepository regionalUnitRepository;
     private final Mapper mapper;
 
     @Override
@@ -44,5 +47,13 @@ public class LookupService implements ILookupService {
     public List<PestReadOnlyDTO> getPests(PestType type) {
         var pests = (type == null) ? pestRepository.findAll() : pestRepository.findByType(type);
         return pests.stream().map(mapper::mapToPestReadOnlyDTO).toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<RegionalUnitReadOnlyDTO> getRegionalUnits() {
+        return regionalUnitRepository.findAllByOrderByRegionNameAscNameAsc().stream()
+                .map(mapper::mapToRegionalUnitReadOnlyDTO)
+                .toList();
     }
 }

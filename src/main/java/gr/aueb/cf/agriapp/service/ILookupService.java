@@ -5,6 +5,7 @@ import gr.aueb.cf.agriapp.core.enums.PestType;
 import gr.aueb.cf.agriapp.core.enums.ProductCategory;
 import gr.aueb.cf.agriapp.dto.CropTypeReadOnlyDTO;
 import gr.aueb.cf.agriapp.dto.PestReadOnlyDTO;
+import gr.aueb.cf.agriapp.dto.RegionalUnitReadOnlyDTO;
 import gr.aueb.cf.agriapp.dto.ProductReadOnlyDTO;
 
 import java.util.List;
@@ -16,4 +17,6 @@ public interface ILookupService {
     List<ProductReadOnlyDTO> getProducts(ProductCategory category);
 
     List<PestReadOnlyDTO> getPests(PestType type);
+
+    List<RegionalUnitReadOnlyDTO> getRegionalUnits();
 }
