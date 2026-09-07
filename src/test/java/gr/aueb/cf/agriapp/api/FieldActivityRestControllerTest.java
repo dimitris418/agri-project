@@ -83,7 +83,7 @@ class FieldActivityRestControllerTest {
         token = tokenFor(OWNER);
 
         String parcelUuid = create("/api/parcels", ParcelInsertDTO.builder()
-                .name("Κάτω χωράφι").location("Λάρισα")
+                .name("Κάτω χωράφι")
                 .areaInStremmas(new BigDecimal("25.50")).kaek("").isActive(true)
                 .build()).get("uuid").asText();
 

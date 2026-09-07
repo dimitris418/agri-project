@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import gr.aueb.cf.agriapp.dto.*;
 import gr.aueb.cf.agriapp.model.auth.Capability;
 import gr.aueb.cf.agriapp.model.auth.Role;
+import gr.aueb.cf.agriapp.model.static_data.Region;
+import gr.aueb.cf.agriapp.model.static_data.RegionalUnit;
 import gr.aueb.cf.agriapp.model.Farmer;
 import gr.aueb.cf.agriapp.model.User;
 import gr.aueb.cf.agriapp.repository.FarmerRepository;
@@ -65,6 +67,27 @@ class ParcelRestControllerTest {
         roleRepository.save(readOnly);
     }
 
+    private RegionalUnit regionalUnit(String unitName, String regionName) {
+        // Το όνομα της περιφέρειας είναι unique, οπότε οι ενότητες της ίδιας
+        // περιφέρειας πρέπει να δείχνουν στην ήδη αποθηκευμένη εγγραφή.
+        Region region = em.createQuery("SELECT r FROM Region r WHERE r.name = :name", Region.class)
+                .setParameter("name", regionName)
+                .getResultStream()
+                .findFirst()
+                .orElseGet(() -> {
+                    Region created = new Region();
+                    created.setName(regionName);
+                    em.persist(created);
+                    return created;
+                });
+
+        RegionalUnit unit = new RegionalUnit();
+        unit.setName(unitName);
+        unit.setRegion(region);
+        em.persist(unit);
+        return unit;
+    }
+
     private Capability capability(String name) {
         Capability c = new Capability();
         c.setName(name);
@@ -121,7 +144,7 @@ class ParcelRestControllerTest {
 
     private ParcelInsertDTO parcel(String name, String kaek) {
         return ParcelInsertDTO.builder()
-                .name(name).location("Λάρισα")
+                .name(name)
                 .areaInStremmas(new BigDecimal("25.50"))
                 .kaek(kaek).isActive(true)
                 .build();
@@ -212,7 +235,7 @@ class ParcelRestControllerTest {
         ParcelUpdateDTO dto = ParcelUpdateDTO.builder()
                 .id(created.get("id").asLong())
                 .uuid("some-other-uuid")
-                .name("Ανανεωμένο").location("Καρδίτσα")
+                .name("Ανανεωμένο")
                 .areaInStremmas(new BigDecimal("30.00"))
                 .kaek("123456789012").isActive(true)
                 .build();
@@ -259,27 +282,56 @@ class ParcelRestControllerTest {
     }
 
     @Test
-    @DisplayName("Η λίστα φιλτράρεται ανά τοποθεσία, χωρίς διάκριση πεζών")
-    void theListIsFilteredByLocation() throws Exception {
+    @DisplayName("Η λίστα φιλτράρεται ανά περιφερειακή ενότητα")
+    void theListIsFilteredByRegionalUnit() throws Exception {
         register(OWNER, "111111111");
         String token = tokenFor(OWNER);
-        createParcel(token, "Κάτω χωράφι", "123456789012");
 
+        RegionalUnit larisa = regionalUnit("Λάρισας", "Θεσσαλία");
+        RegionalUnit trikala = regionalUnit("Τρικάλων", "Θεσσαλία");
+
+        createParcelIn(token, "Κάτω χωράφι", "123456789012", larisa.getId());
+        createParcelIn(token, "Ορεινό", "999999999999", trikala.getId());
+
+        mockMvc.perform(get("/api/parcels")
+                        .header("Authorization", token)
+                        .param("regionalUnitId", trikala.getId().toString()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalElements").value(1))
+                .andExpect(jsonPath("$.data[0].name").value("Ορεινό"))
+                .andExpect(jsonPath("$.data[0].regionalUnitReadOnlyDTO.name").value("Τρικάλων"))
+                .andExpect(jsonPath("$.data[0].regionalUnitReadOnlyDTO.regionReadOnlyDTO.name")
+                        .value("Θεσσαλία"));
+    }
+
+    @Test
+    @DisplayName("Ανύπαρκτη περιφερειακή ενότητα επιστρέφει 404")
+    void anUnknownRegionalUnitReturnsNotFound() throws Exception {
+        register(OWNER, "111111111");
+
+        mockMvc.perform(post("/api/parcels")
+                        .header("Authorization", tokenFor(OWNER))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json(ParcelInsertDTO.builder()
+                                .name("Κάτω χωράφι")
+                                .areaInStremmas(new BigDecimal("25.50"))
+                                .kaek("123456789012").isActive(true)
+                                .regionalUnitId(9999L)
+                                .build())))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("RegionalUnitNotFound"));
+    }
+
+    private void createParcelIn(String token, String name, String kaek, Long unitId) throws Exception {
         mockMvc.perform(post("/api/parcels")
                         .header("Authorization", token)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json(ParcelInsertDTO.builder()
-                                .name("Ορεινό").location("Τρίκαλα")
-                                .areaInStremmas(new BigDecimal("10.00"))
-                                .kaek("999999999999").isActive(true)
+                                .name(name)
+                                .areaInStremmas(new BigDecimal("25.50"))
+                                .kaek(kaek).isActive(true)
+                                .regionalUnitId(unitId)
                                 .build())))
                 .andExpect(status().isCreated());
-
-        mockMvc.perform(get("/api/parcels")
-                        .header("Authorization", token)
-                        .param("location", "καλα"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.totalElements").value(1))
-                .andExpect(jsonPath("$.data[0].name").value("Ορεινό"));
     }
 }

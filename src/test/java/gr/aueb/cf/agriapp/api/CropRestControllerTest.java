@@ -127,7 +127,7 @@ class CropRestControllerTest {
 
     private String createParcel(String bearer, String name) throws Exception {
         return create(bearer, "/api/parcels", ParcelInsertDTO.builder()
-                .name(name).location("Λάρισα")
+                .name(name)
                 .areaInStremmas(new BigDecimal("25.50")).kaek("").isActive(true)
                 .build()).get("uuid").asText();
     }

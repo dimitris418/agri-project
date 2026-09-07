@@ -10,9 +10,13 @@ import gr.aueb.cf.agriapp.dto.UserInsertDTO;
 import gr.aueb.cf.agriapp.model.auth.Role;
 import gr.aueb.cf.agriapp.model.static_data.CropType;
 import gr.aueb.cf.agriapp.model.static_data.Pest;
+import gr.aueb.cf.agriapp.model.static_data.Region;
+import gr.aueb.cf.agriapp.model.static_data.RegionalUnit;
 import gr.aueb.cf.agriapp.model.static_data.Product;
 import gr.aueb.cf.agriapp.repository.CropTypeRepository;
 import gr.aueb.cf.agriapp.repository.PestRepository;
+import gr.aueb.cf.agriapp.repository.RegionRepository;
+import gr.aueb.cf.agriapp.repository.RegionalUnitRepository;
 import gr.aueb.cf.agriapp.repository.ProductRepository;
 import gr.aueb.cf.agriapp.repository.RoleRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -44,6 +48,8 @@ class LookupRestControllerTest {
     @Autowired private CropTypeRepository cropTypeRepository;
     @Autowired private ProductRepository productRepository;
     @Autowired private PestRepository pestRepository;
+    @Autowired private RegionRepository regionRepository;
+    @Autowired private RegionalUnitRepository regionalUnitRepository;
 
     private String token;
 
@@ -163,5 +169,24 @@ class LookupRestControllerTest {
         mockMvc.perform(get("/api/lookups/crop-types").header("Authorization", token)
                         .param("season", "AUTUMN"))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("Οι περιφερειακές ενότητες επιστρέφονται με την περιφέρειά τους")
+    void regionalUnitsCarryTheirRegion() throws Exception {
+        Region thessaly = new Region();
+        thessaly.setName("Θεσσαλία");
+        regionRepository.save(thessaly);
+
+        RegionalUnit larisa = new RegionalUnit();
+        larisa.setName("Λάρισας");
+        larisa.setRegion(thessaly);
+        regionalUnitRepository.save(larisa);
+
+        mockMvc.perform(get("/api/lookups/regional-units").header("Authorization", token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].name").value("Λάρισας"))
+                .andExpect(jsonPath("$[0].regionReadOnlyDTO.name").value("Θεσσαλία"));
     }
 }

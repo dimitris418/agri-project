@@ -70,7 +70,6 @@ class ParcelServiceTest {
     private ParcelInsertDTO insertDTO(String name, String kaek) {
         return ParcelInsertDTO.builder()
                 .name(name)
-                .location("Λάρισα")
                 .areaInStremmas(new BigDecimal("25.50"))
                 .kaek(kaek)
                 .isActive(true)
@@ -82,7 +81,6 @@ class ParcelServiceTest {
                 .id(parcel.id())
                 .uuid(parcel.uuid())
                 .name("Ανανεωμένο")
-                .location("Καρδίτσα")
                 .areaInStremmas(new BigDecimal("30.00"))
                 .kaek(kaek)
                 .isActive(true)
