@@ -7,6 +7,7 @@ import gr.aueb.cf.agriapp.core.filters.FarmerFilters;
 import gr.aueb.cf.agriapp.core.filters.Paginated;
 import gr.aueb.cf.agriapp.dto.FarmerInsertDTO;
 import gr.aueb.cf.agriapp.dto.FarmerReadOnlyDTO;
+import gr.aueb.cf.agriapp.dto.FarmerStatusUpdateDTO;
 import gr.aueb.cf.agriapp.dto.FarmerUpdateDTO;
 
 public interface IFarmerService {
@@ -21,4 +22,7 @@ public interface IFarmerService {
             throws AppObjectNotFoundException, AppObjectAlreadyExists;
 
     Paginated<FarmerReadOnlyDTO> getFarmersFilteredPaginated(FarmerFilters filters);
+
+    FarmerReadOnlyDTO setFarmerStatus(String uuid, FarmerStatusUpdateDTO dto)
+            throws AppObjectNotFoundException;
 }

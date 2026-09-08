@@ -8,6 +8,7 @@ import gr.aueb.cf.agriapp.core.filters.Paginated;
 import gr.aueb.cf.agriapp.core.specifications.FarmerSpecification;
 import gr.aueb.cf.agriapp.dto.FarmerInsertDTO;
 import gr.aueb.cf.agriapp.dto.FarmerReadOnlyDTO;
+import gr.aueb.cf.agriapp.dto.FarmerStatusUpdateDTO;
 import gr.aueb.cf.agriapp.dto.FarmerUpdateDTO;
 import gr.aueb.cf.agriapp.mapper.Mapper;
 import gr.aueb.cf.agriapp.model.Farmer;
@@ -123,6 +124,26 @@ public class FarmerService implements IFarmerService {
     public Paginated<FarmerReadOnlyDTO> getFarmersFilteredPaginated(FarmerFilters filters) {
         var filtered = farmerRepository.findAll(getSpecsFromFilters(filters), filters.getPageable());
         return Paginated.fromPage(filtered.map(mapper::mapToFarmerReadOnlyDTO));
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public FarmerReadOnlyDTO setFarmerStatus(String uuid, FarmerStatusUpdateDTO dto)
+            throws AppObjectNotFoundException {
+
+        Farmer farmer = farmerRepository.findByUuid(uuid)
+                .orElseThrow(() -> new AppObjectNotFoundException("Farmer",
+                        "Farmer with uuid " + uuid + " not found"));
+
+        // Και οι δύο σημαίες: η του Farmer κρύβει τον αγρότη από τις λίστες,
+        // η του User είναι αυτή που το isEnabled() διαβάζει για τη σύνδεση.
+        farmer.setIsActive(dto.isActive());
+        farmer.getUser().setIsActive(dto.isActive());
+
+        Farmer saved = farmerRepository.save(farmer);
+        log.info("Farmer with uuid={} set to isActive={}", uuid, dto.isActive());
+
+        return mapper.mapToFarmerReadOnlyDTO(saved);
     }
 
     private Specification<Farmer> getSpecsFromFilters(FarmerFilters filters) {

@@ -5,6 +5,7 @@ import gr.aueb.cf.agriapp.core.filters.FarmerFilters;
 import gr.aueb.cf.agriapp.core.filters.Paginated;
 import gr.aueb.cf.agriapp.dto.FarmerInsertDTO;
 import gr.aueb.cf.agriapp.dto.FarmerReadOnlyDTO;
+import gr.aueb.cf.agriapp.dto.FarmerStatusUpdateDTO;
 import gr.aueb.cf.agriapp.dto.FarmerUpdateDTO;
 import gr.aueb.cf.agriapp.service.IFarmerService;
 import jakarta.validation.Valid;
@@ -48,6 +49,20 @@ public class FarmerRestController {
     @GetMapping
     public ResponseEntity<Paginated<FarmerReadOnlyDTO>> search(@ModelAttribute FarmerFilters filters) {
         return ResponseEntity.ok(farmerService.getFarmersFilteredPaginated(filters));
+    }
+
+    /** Λογική διαγραφή και επαναφορά λογαριασμού. Απαιτεί MANAGE_USERS. */
+    @SecurityRequirement(name = "Bearer Authentication")
+    @PatchMapping("/{uuid}/status")
+    public ResponseEntity<FarmerReadOnlyDTO> setStatus(
+            @PathVariable String uuid,
+            @Valid @RequestBody FarmerStatusUpdateDTO dto,
+            BindingResult bindingResult)
+            throws ValidationException, AppObjectNotFoundException {
+
+        if (bindingResult.hasErrors()) throw new ValidationException(bindingResult);
+
+        return ResponseEntity.ok(farmerService.setFarmerStatus(uuid, dto));
     }
 
     @SecurityRequirement(name = "Bearer Authentication")
