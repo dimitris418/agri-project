@@ -4,6 +4,7 @@ import lombok.Builder;
 
 @Builder
 public record UserReadOnlyDTO(
+        Long id,
         String firstname,
         String lastname,
         String username,

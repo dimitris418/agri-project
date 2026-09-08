@@ -22,6 +22,7 @@ public class Mapper {
     // ----------------------------------------------------------------- User
     public UserReadOnlyDTO mapToUserReadOnlyDTO(User user) {
         return UserReadOnlyDTO.builder()
+                .id(user.getId())
                 .firstname(user.getFirstname())
                 .lastname(user.getLastname())
                 .username(user.getUsername())
