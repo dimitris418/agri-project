@@ -74,7 +74,7 @@ public class ErrorHandler extends ResponseEntityExceptionHandler {
         log.error("Server error. Code={}, Message={}", e.getCode(), e.getMessage(), e);
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ResponseMessageDTO(e.getCode(), "An internal error occurred"));
+                .body(new ResponseMessageDTO(e.getCode(), "Παρουσιάστηκε εσωτερικό σφάλμα"));
     }
 
     @ExceptionHandler(AccessDeniedException.class)
@@ -82,7 +82,7 @@ public class ErrorHandler extends ResponseEntityExceptionHandler {
         log.warn("Access denied for URI={}", request.getDescription(false));
         return ResponseEntity
                 .status(HttpStatus.FORBIDDEN)
-                .body(new ResponseMessageDTO("ACCESS_DENIED", "Access is denied"));
+                .body(new ResponseMessageDTO("ACCESS_DENIED", "Δεν έχετε δικαίωμα πρόσβασης"));
     }
 
     @ExceptionHandler(DataAccessException.class)
@@ -90,7 +90,7 @@ public class ErrorHandler extends ResponseEntityExceptionHandler {
         log.error("Database error", e);
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ResponseMessageDTO("DATABASE_ERROR", "A database error occurred"));
+                .body(new ResponseMessageDTO("DATABASE_ERROR", "Παρουσιάστηκε σφάλμα βάσης δεδομένων"));
     }
 
     @ExceptionHandler(AuthenticationException.class)
@@ -98,7 +98,7 @@ public class ErrorHandler extends ResponseEntityExceptionHandler {
         log.warn("Authentication failed: {}", e.getMessage());
         return ResponseEntity
                 .status(HttpStatus.UNAUTHORIZED)
-                .body(new ResponseMessageDTO("UserNotAuthenticated", "Invalid username or password"));
+                .body(new ResponseMessageDTO("UserNotAuthenticated", "Η σύνδεση δεν ήταν δυνατή με τα στοιχεία που δόθηκαν"));
     }
 
     @ExceptionHandler(Exception.class)
@@ -106,6 +106,6 @@ public class ErrorHandler extends ResponseEntityExceptionHandler {
         log.error("Unexpected error for URI={}", request.getDescription(false), e);
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ResponseMessageDTO("INTERNAL_ERROR", "An unexpected error occurred"));
+                .body(new ResponseMessageDTO("INTERNAL_ERROR", "Παρουσιάστηκε μη αναμενόμενο σφάλμα"));
     }
 }

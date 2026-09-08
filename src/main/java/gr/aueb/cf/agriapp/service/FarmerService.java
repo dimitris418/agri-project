@@ -43,16 +43,16 @@ public class FarmerService implements IFarmerService {
         String vat = dto.userInsertDTO().vat();
 
         if (userRepository.findByUsername(username).isPresent()) {
-            throw new AppObjectAlreadyExists("User", "User with username " + username + " already exists");
+            throw new AppObjectAlreadyExists("User", "Υπάρχει ήδη χρήστης με όνομα " + username);
         }
 
         if (userRepository.findByVat(vat).isPresent()) {
-            throw new AppObjectAlreadyExists("User", "User with vat " + vat + " already exists");
+            throw new AppObjectAlreadyExists("User", "Υπάρχει ήδη χρήστης με ΑΦΜ " + vat);
         }
 
         Role farmerRole = roleRepository.findByName(FARMER_ROLE)
                 .orElseThrow(() -> new AppServerException("RoleNotConfigured",
-                        "Role " + FARMER_ROLE + " is missing from the database"));
+                        "Ο ρόλος " + FARMER_ROLE + " λείπει από τη βάση"));
 
         Farmer farmer = mapper.mapToFarmerEntity(dto);
         farmer.getUser().setRole(farmerRole);
@@ -71,7 +71,7 @@ public class FarmerService implements IFarmerService {
         return farmerRepository.findByUserUsername(username)
                 .map(mapper::mapToFarmerReadOnlyDTO)
                 .orElseThrow(() -> new AppObjectNotFoundException("Farmer",
-                        "Farmer for username " + username + " not found"));
+                        "Δεν βρέθηκε αγρότης για τον χρήστη " + username));
     }
 
     @Override
@@ -81,25 +81,25 @@ public class FarmerService implements IFarmerService {
 
         Farmer existing = farmerRepository.findByUserUsername(username)
                 .orElseThrow(() -> new AppObjectNotFoundException("Farmer",
-                        "Farmer for username " + username + " not found"));
+                        "Δεν βρέθηκε αγρότης για τον χρήστη " + username));
 
         // Ο αγρότης ενημερώνει μόνο τον εαυτό του: το id του DTO αγνοείται
         // ως στόχος και χρησιμοποιείται μόνο για έλεγχο συνέπειας.
         if (!existing.getId().equals(dto.id())) {
             throw new AppObjectNotFoundException("Farmer",
-                    "Farmer with id " + dto.id() + " not found");
+                    "Δεν βρέθηκε αγρότης με id " + dto.id());
         }
 
         String newUsername = dto.userUpdateDTO().username();
         if (!existing.getUser().getUsername().equals(newUsername)
                 && userRepository.findByUsername(newUsername).isPresent()) {
-            throw new AppObjectAlreadyExists("User", "User with username " + newUsername + " already exists");
+            throw new AppObjectAlreadyExists("User", "Υπάρχει ήδη χρήστης με όνομα " + newUsername);
         }
 
         String newVat = dto.userUpdateDTO().vat();
         if (!existing.getUser().getVat().equals(newVat)
                 && userRepository.findByVat(newVat).isPresent()) {
-            throw new AppObjectAlreadyExists("User", "User with vat " + newVat + " already exists");
+            throw new AppObjectAlreadyExists("User", "Υπάρχει ήδη χρήστης με ΑΦΜ " + newVat);
         }
 
         Farmer toUpdate = mapper.mapToFarmerEntity(dto);
@@ -133,7 +133,7 @@ public class FarmerService implements IFarmerService {
 
         Farmer farmer = farmerRepository.findByUuid(uuid)
                 .orElseThrow(() -> new AppObjectNotFoundException("Farmer",
-                        "Farmer with uuid " + uuid + " not found"));
+                        "Δεν βρέθηκε αγρότης με uuid " + uuid));
 
         // Και οι δύο σημαίες: η του Farmer κρύβει τον αγρότη από τις λίστες,
         // η του User είναι αυτή που το isEnabled() διαβάζει για τη σύνδεση.

@@ -104,7 +104,7 @@ public class ParcelService implements IParcelService {
     private Farmer getFarmer(String username) throws AppObjectNotFoundException {
         return farmerRepository.findByUserUsername(username)
                 .orElseThrow(() -> new AppObjectNotFoundException("Farmer",
-                        "Farmer for username " + username + " not found"));
+                        "Δεν βρέθηκε αγρότης για τον χρήστη " + username));
     }
 
     private Parcel getOwnedParcel(String uuid, Farmer farmer)
@@ -112,11 +112,11 @@ public class ParcelService implements IParcelService {
 
         Parcel parcel = parcelRepository.findByUuid(uuid)
                 .orElseThrow(() -> new AppObjectNotFoundException("Parcel",
-                        "Parcel with uuid " + uuid + " not found"));
+                        "Δεν βρέθηκε αγροτεμάχιο με uuid " + uuid));
 
         if (!parcel.getFarmer().getId().equals(farmer.getId())) {
             throw new AppObjectNotAuthorizedException("Parcel",
-                    "Parcel with uuid " + uuid + " does not belong to the requesting farmer");
+                    "Το αγροτεμάχιο με uuid " + uuid + " δεν ανήκει στον συνδεδεμένο αγρότη");
         }
 
         return parcel;
@@ -127,7 +127,7 @@ public class ParcelService implements IParcelService {
 
         var owner = parcelRepository.findByKaek(kaek);
         if (owner.isPresent() && !owner.get().getId().equals(currentParcelId)) {
-            throw new AppObjectAlreadyExists("Parcel", "Parcel with kaek " + kaek + " already exists");
+            throw new AppObjectAlreadyExists("Parcel", "Υπάρχει ήδη αγροτεμάχιο με ΚΑΕΚ " + kaek);
         }
     }
 
@@ -135,7 +135,7 @@ public class ParcelService implements IParcelService {
         if (id == null) return null;
         return regionalUnitRepository.findById(id)
                 .orElseThrow(() -> new AppObjectNotFoundException("RegionalUnit",
-                        "Regional unit with id " + id + " not found"));
+                        "Δεν βρέθηκε περιφερειακή ενότητα με id " + id));
     }
 
     private Specification<Parcel> buildSpecification(ParcelFilters filters, Long farmerId) {

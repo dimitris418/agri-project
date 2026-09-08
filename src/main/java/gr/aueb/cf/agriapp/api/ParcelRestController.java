@@ -87,7 +87,7 @@ public class ParcelRestController {
             throws AppObjectInvalidArgumentException {
         if (!pathUuid.equals(bodyUuid)) {
             throw new AppObjectInvalidArgumentException("Parcel",
-                    "The uuid in the path does not match the uuid in the body");
+                    "Το uuid της διαδρομής δεν συμφωνεί με το uuid του σώματος");
         }
     }
 }

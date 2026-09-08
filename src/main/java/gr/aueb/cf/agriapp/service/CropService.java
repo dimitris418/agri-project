@@ -108,7 +108,7 @@ public class CropService implements ICropService {
 
         if (!fieldActivityRepository.findByCropIdOrderByActivityDateDesc(crop.getId()).isEmpty()) {
             throw new AppObjectInvalidArgumentException("Crop",
-                    "Crop with uuid " + uuid + " has logbook entries and cannot be deleted");
+                    "Η καλλιέργεια με uuid " + uuid + " έχει καταχωρημένες εργασίες και δεν διαγράφεται");
         }
 
         cropRepository.delete(crop);
@@ -118,7 +118,7 @@ public class CropService implements ICropService {
     private Farmer getFarmer(String username) throws AppObjectNotFoundException {
         return farmerRepository.findByUserUsername(username)
                 .orElseThrow(() -> new AppObjectNotFoundException("Farmer",
-                        "Farmer for username " + username + " not found"));
+                        "Δεν βρέθηκε αγρότης για τον χρήστη " + username));
     }
 
     private Parcel getOwnedParcel(String uuid, Farmer farmer)
@@ -126,11 +126,11 @@ public class CropService implements ICropService {
 
         Parcel parcel = parcelRepository.findByUuid(uuid)
                 .orElseThrow(() -> new AppObjectNotFoundException("Parcel",
-                        "Parcel with uuid " + uuid + " not found"));
+                        "Δεν βρέθηκε αγροτεμάχιο με uuid " + uuid));
 
         if (!parcel.getFarmer().getId().equals(farmer.getId())) {
             throw new AppObjectNotAuthorizedException("Parcel",
-                    "Parcel with uuid " + uuid + " does not belong to the requesting farmer");
+                    "Το αγροτεμάχιο με uuid " + uuid + " δεν ανήκει στον συνδεδεμένο αγρότη");
         }
         return parcel;
     }
@@ -140,11 +140,11 @@ public class CropService implements ICropService {
 
         Crop crop = cropRepository.findByUuid(uuid)
                 .orElseThrow(() -> new AppObjectNotFoundException("Crop",
-                        "Crop with uuid " + uuid + " not found"));
+                        "Δεν βρέθηκε καλλιέργεια με uuid " + uuid));
 
         if (!crop.getParcel().getFarmer().getId().equals(farmer.getId())) {
             throw new AppObjectNotAuthorizedException("Crop",
-                    "Crop with uuid " + uuid + " does not belong to the requesting farmer");
+                    "Η καλλιέργεια με uuid " + uuid + " δεν ανήκει στον συνδεδεμένο αγρότη");
         }
         return crop;
     }
@@ -152,7 +152,7 @@ public class CropService implements ICropService {
     private CropType getCropType(Long id) throws AppObjectNotFoundException {
         return cropTypeRepository.findById(id)
                 .orElseThrow(() -> new AppObjectNotFoundException("CropType",
-                        "Crop type with id " + id + " not found"));
+                        "Δεν βρέθηκε είδος καλλιέργειας με id " + id));
     }
 
     private LocalDate findHarvestDate(Long cropId) {

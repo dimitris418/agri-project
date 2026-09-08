@@ -74,7 +74,7 @@ public class FieldActivityRestController {
         if (bindingResult.hasErrors()) throw new ValidationException(bindingResult);
         if (!uuid.equals(dto.uuid())) {
             throw new AppObjectInvalidArgumentException("Activity",
-                    "The uuid in the path does not match the uuid in the body");
+                    "Το uuid της διαδρομής δεν συμφωνεί με το uuid του σώματος");
         }
 
         return ResponseEntity.ok(fieldActivityService.updateActivity(dto, authentication.getName()));

@@ -25,6 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +35,10 @@ import java.util.stream.Collectors;
 @Slf4j
 @RequiredArgsConstructor
 public class FieldActivityService implements IFieldActivityService {
+
+    // Οι ημερομηνίες αυτές φτάνουν στον χρήστη μέσα στο μήνυμα σφάλματος,
+    // οπότε γράφονται όπως τις βλέπει στις φόρμες, όχι σε μορφή ISO.
+    private static final DateTimeFormatter DATE = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     private final FieldActivityRepository fieldActivityRepository;
     private final CropRepository cropRepository;
@@ -149,10 +154,10 @@ public class FieldActivityService implements IFieldActivityService {
             case IRRIGATION, HARVEST -> requireQuantity(a);
             case OBSERVATION -> {
                 if (a.getPest() == null) {
-                    throw new AppObjectInvalidArgumentException("Activity", "An observation requires a pest");
+                    throw new AppObjectInvalidArgumentException("Activity", "Η παρατήρηση απαιτεί εχθρό ή ασθένεια");
                 }
                 if (a.getSeverity() == null) {
-                    throw new AppObjectInvalidArgumentException("Activity", "An observation requires a severity level");
+                    throw new AppObjectInvalidArgumentException("Activity", "Η παρατήρηση απαιτεί βαθμό έντασης");
                 }
             }
         }
@@ -161,19 +166,19 @@ public class FieldActivityService implements IFieldActivityService {
     private void requireProduct(FieldActivity a, ProductCategory... allowed) throws AppObjectInvalidArgumentException {
         if (a.getProduct() == null) {
             throw new AppObjectInvalidArgumentException("Activity",
-                    "Activity of type " + a.getType() + " requires a product");
+                    "Η εργασία τύπου " + a.getType() + " απαιτεί σκεύασμα");
         }
         for (ProductCategory c : allowed) {
             if (a.getProduct().getCategory() == c) return;
         }
         throw new AppObjectInvalidArgumentException("Activity",
-                "Product " + a.getProduct().getName() + " cannot be used for an activity of type " + a.getType());
+                "Το σκεύασμα " + a.getProduct().getName() + " δεν χρησιμοποιείται σε εργασία τύπου " + a.getType());
     }
 
     private void requireQuantity(FieldActivity a) throws AppObjectInvalidArgumentException {
         if (a.getQuantity() == null || a.getUnit() == null) {
             throw new AppObjectInvalidArgumentException("Activity",
-                    "Activity of type " + a.getType() + " requires a quantity and a unit");
+                    "Η εργασία τύπου " + a.getType() + " απαιτεί ποσότητα και μονάδα μέτρησης");
         }
     }
 
@@ -196,7 +201,7 @@ public class FieldActivityService implements IFieldActivityService {
                 .toList();
 
         if (harvests.size() > 1) {
-            throw new AppObjectInvalidArgumentException("Activity", "The crop already has a harvest recorded");
+            throw new AppObjectInvalidArgumentException("Activity", "Η καλλιέργεια έχει ήδη καταχωρημένη συγκομιδή");
         }
         if (harvests.isEmpty()) return;
 
@@ -205,7 +210,7 @@ public class FieldActivityService implements IFieldActivityService {
         for (FieldActivity a : effective) {
             if (a.getType() != ActivityType.HARVEST && a.getActivityDate().isAfter(harvestDate)) {
                 throw new AppObjectInvalidArgumentException("Activity",
-                        "No activity can be dated after the harvest on " + harvestDate);
+                        "Καμία εργασία δεν μπορεί να έχει ημερομηνία μετά τη συγκομιδή της " + DATE.format(harvestDate));
             }
         }
 
@@ -220,8 +225,8 @@ public class FieldActivityService implements IFieldActivityService {
             LocalDate earliestHarvest = a.getActivityDate().plusDays(phi);
             if (earliestHarvest.isAfter(harvestDate)) {
                 throw new AppObjectInvalidArgumentException("Activity",
-                        "The pre-harvest interval of " + a.getProduct().getName() + " (" + phi
-                                + " days) is not respected: harvest cannot precede " + earliestHarvest);
+                        "Δεν τηρείται ο χρόνος αναμονής του σκευάσματος " + a.getProduct().getName()
+                                + " (" + phi + " ημέρες): η συγκομιδή δεν μπορεί να προηγηθεί της " + DATE.format(earliestHarvest));
             }
         }
     }
@@ -229,7 +234,7 @@ public class FieldActivityService implements IFieldActivityService {
     private Farmer getFarmer(String username) throws AppObjectNotFoundException {
         return farmerRepository.findByUserUsername(username)
                 .orElseThrow(() -> new AppObjectNotFoundException("Farmer",
-                        "Farmer for username " + username + " not found"));
+                        "Δεν βρέθηκε αγρότης για τον χρήστη " + username));
     }
 
     private Crop getOwnedCrop(String uuid, Farmer farmer)
@@ -237,11 +242,11 @@ public class FieldActivityService implements IFieldActivityService {
 
         Crop crop = cropRepository.findByUuid(uuid)
                 .orElseThrow(() -> new AppObjectNotFoundException("Crop",
-                        "Crop with uuid " + uuid + " not found"));
+                        "Δεν βρέθηκε καλλιέργεια με uuid " + uuid));
 
         if (!crop.getParcel().getFarmer().getId().equals(farmer.getId())) {
             throw new AppObjectNotAuthorizedException("Crop",
-                    "Crop with uuid " + uuid + " does not belong to the requesting farmer");
+                    "Η καλλιέργεια με uuid " + uuid + " δεν ανήκει στον συνδεδεμένο αγρότη");
         }
         return crop;
     }
@@ -251,11 +256,11 @@ public class FieldActivityService implements IFieldActivityService {
 
         FieldActivity activity = fieldActivityRepository.findByUuid(uuid)
                 .orElseThrow(() -> new AppObjectNotFoundException("Activity",
-                        "Activity with uuid " + uuid + " not found"));
+                        "Δεν βρέθηκε εργασία με uuid " + uuid));
 
         if (!activity.getCrop().getParcel().getFarmer().getId().equals(farmer.getId())) {
             throw new AppObjectNotAuthorizedException("Activity",
-                    "Activity with uuid " + uuid + " does not belong to the requesting farmer");
+                    "Η εργασία με uuid " + uuid + " δεν ανήκει στον συνδεδεμένο αγρότη");
         }
         return activity;
     }
@@ -264,14 +269,14 @@ public class FieldActivityService implements IFieldActivityService {
         if (id == null) return null;
         return productRepository.findById(id)
                 .orElseThrow(() -> new AppObjectNotFoundException("Product",
-                        "Product with id " + id + " not found"));
+                        "Δεν βρέθηκε σκεύασμα με id " + id));
     }
 
     private Pest findPest(Long id) throws AppObjectNotFoundException {
         if (id == null) return null;
         return pestRepository.findById(id)
                 .orElseThrow(() -> new AppObjectNotFoundException("Pest",
-                        "Pest with id " + id + " not found"));
+                        "Δεν βρέθηκε εχθρός ή ασθένεια με id " + id));
     }
 
     private Specification<FieldActivity> buildSpecification(FieldActivityFilters f, Long farmerId) {

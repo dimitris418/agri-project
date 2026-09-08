@@ -72,7 +72,7 @@ public class CropRestController {
         if (bindingResult.hasErrors()) throw new ValidationException(bindingResult);
         if (!uuid.equals(dto.uuid())) {
             throw new AppObjectInvalidArgumentException("Crop",
-                    "The uuid in the path does not match the uuid in the body");
+                    "Το uuid της διαδρομής δεν συμφωνεί με το uuid του σώματος");
         }
 
         return ResponseEntity.ok(cropService.updateCrop(dto, authentication.getName()));

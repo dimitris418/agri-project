@@ -22,6 +22,6 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
         response.setStatus(HttpServletResponse.SC_FORBIDDEN);
         response.setContentType("application/json; charset=UTF-8");
         response.getWriter().write(
-                "{\"code\": \"UserNotAuthorized\", \"description\": \"You are not allowed to access this resource\"}");
+                "{\"code\": \"UserNotAuthorized\", \"description\": \"Δεν έχετε δικαίωμα πρόσβασης σε αυτόν τον πόρο\"}");
     }
 }
