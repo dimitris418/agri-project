@@ -3,6 +3,9 @@ package gr.aueb.cf.agriapp.service;
 import gr.aueb.cf.agriapp.core.exceptions.AppObjectAlreadyExists;
 import gr.aueb.cf.agriapp.core.exceptions.AppObjectNotFoundException;
 import gr.aueb.cf.agriapp.core.exceptions.AppServerException;
+import gr.aueb.cf.agriapp.core.filters.FarmerFilters;
+import gr.aueb.cf.agriapp.core.filters.Paginated;
+import gr.aueb.cf.agriapp.core.specifications.FarmerSpecification;
 import gr.aueb.cf.agriapp.dto.FarmerInsertDTO;
 import gr.aueb.cf.agriapp.dto.FarmerReadOnlyDTO;
 import gr.aueb.cf.agriapp.dto.FarmerUpdateDTO;
@@ -14,6 +17,7 @@ import gr.aueb.cf.agriapp.repository.RoleRepository;
 import gr.aueb.cf.agriapp.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -112,5 +116,20 @@ public class FarmerService implements IFarmerService {
         log.info("Farmer with username={} updated", username);
 
         return mapper.mapToFarmerReadOnlyDTO(updated);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Paginated<FarmerReadOnlyDTO> getFarmersFilteredPaginated(FarmerFilters filters) {
+        var filtered = farmerRepository.findAll(getSpecsFromFilters(filters), filters.getPageable());
+        return Paginated.fromPage(filtered.map(mapper::mapToFarmerReadOnlyDTO));
+    }
+
+    private Specification<Farmer> getSpecsFromFilters(FarmerFilters filters) {
+        return FarmerSpecification.farmerStringFieldLike("uuid", filters.getUuid())
+                .and(FarmerSpecification.farmerStringFieldLike("registryNumber", filters.getRegistryNumber()))
+                .and(FarmerSpecification.farmerUserStringFieldLike("lastname", filters.getLastname()))
+                .and(FarmerSpecification.farmerUserStringFieldLike("username", filters.getUsername()))
+                .and(FarmerSpecification.farmerIsActive(filters.getActive()));
     }
 }

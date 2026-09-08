@@ -50,6 +50,7 @@ public class SecurityConfiguration {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(req -> req
                         .requestMatchers(HttpMethod.POST, "/api/farmers").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/farmers").hasAuthority("MANAGE_USERS")
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers(
                                 "/swagger-ui.html",

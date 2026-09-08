@@ -1,6 +1,8 @@
 package gr.aueb.cf.agriapp.api;
 
 import gr.aueb.cf.agriapp.core.exceptions.*;
+import gr.aueb.cf.agriapp.core.filters.FarmerFilters;
+import gr.aueb.cf.agriapp.core.filters.Paginated;
 import gr.aueb.cf.agriapp.dto.FarmerInsertDTO;
 import gr.aueb.cf.agriapp.dto.FarmerReadOnlyDTO;
 import gr.aueb.cf.agriapp.dto.FarmerUpdateDTO;
@@ -39,6 +41,13 @@ public class FarmerRestController {
                 .toUri();
 
         return ResponseEntity.created(location).body(created);
+    }
+
+    /** Διαχειριστική προβολή: απαιτεί MANAGE_USERS, βλ. SecurityConfiguration. */
+    @SecurityRequirement(name = "Bearer Authentication")
+    @GetMapping
+    public ResponseEntity<Paginated<FarmerReadOnlyDTO>> search(@ModelAttribute FarmerFilters filters) {
+        return ResponseEntity.ok(farmerService.getFarmersFilteredPaginated(filters));
     }
 
     @SecurityRequirement(name = "Bearer Authentication")
