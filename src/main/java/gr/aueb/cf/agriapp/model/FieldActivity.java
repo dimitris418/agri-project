@@ -23,7 +23,13 @@ import java.util.UUID;
 @Getter
 @Setter
 @Builder
-@Table(name = "field_activities")
+@Table(name = "field_activities", indexes = {
+        // Η κύρια διαδρομή πρόσβασης του ημερολογίου: φίλτρο ανά καλλιέργεια,
+        // εύρος ημερομηνιών και ταξινόμηση κατά ημερομηνία, με μία σάρωση. Το
+        // crop_id έχει ήδη ευρετήριο ως foreign key -- εδώ προστίθεται η
+        // δεύτερη στήλη.
+        @Index(name = "idx_activity_crop_date", columnList = "crop_id, activity_date")
+})
 public class FieldActivity extends AbstractEntity {
 
     @Id

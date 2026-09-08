@@ -21,7 +21,9 @@ import java.util.UUID;
 @Getter
 @Setter
 @Builder
-@Table(name = "parcels")
+@Table(name = "parcels", indexes = {
+        @Index(name = "idx_parcel_farmer_active", columnList = "farmer_id, is_active")
+})
 public class Parcel extends AbstractEntity {
 
     @Id
