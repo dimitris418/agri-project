@@ -246,6 +246,25 @@ class FarmerRestControllerTest {
     }
 
     @Test
+    @DisplayName("Ο απενεργοποιημένος αγρότης δεν μπορεί να ξανασυνδεθεί")
+    void aDeactivatedFarmerCannotAuthenticateAgain() throws Exception {
+        String uuid = registerFarmer(OTHER, "987654321", "Μανωλάκη");
+
+        mockMvc.perform(patch("/api/farmers/" + uuid + "/status")
+                        .header("Authorization", adminToken())
+                        .contentType(MediaType.APPLICATION_JSON).content(statusJson(false)))
+                .andExpect(status().isOk());
+
+        // Τα στοιχεία είναι σωστά· ο έλεγχος isEnabled() του Spring Security
+        // κόβει τη σύνδεση πριν καν συγκριθεί το συνθηματικό.
+        mockMvc.perform(post("/api/auth/authenticate")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json(new AuthenticationRequestDTO(OTHER, PASSWORD))))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.code").value("UserNotAuthenticated"));
+    }
+
+    @Test
     @DisplayName("Ο αγρότης δεν αλλάζει την κατάσταση κανενός λογαριασμού")
     void aFarmerCannotChangeAnyAccountStatus() throws Exception {
         mockMvc.perform(patch("/api/farmers/" + me.get("uuid").asText() + "/status")
