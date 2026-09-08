@@ -3,9 +3,13 @@ package gr.aueb.cf.agriapp.api;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import gr.aueb.cf.agriapp.dto.*;
+import gr.aueb.cf.agriapp.model.User;
+import gr.aueb.cf.agriapp.model.auth.Capability;
 import gr.aueb.cf.agriapp.model.auth.Role;
 import gr.aueb.cf.agriapp.repository.RoleRepository;
 import gr.aueb.cf.agriapp.repository.UserRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -14,6 +18,7 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,11 +33,16 @@ class FarmerRestControllerTest {
 
     private static final String PASSWORD = "Agri2026!";
     private static final String USERNAME = "owner@example.com";
+    private static final String OTHER = "other@example.com";
+    private static final String ADMIN = "admin@example.com";
 
     @Autowired private MockMvc mockMvc;
     @Autowired private ObjectMapper objectMapper;
     @Autowired private RoleRepository roleRepository;
     @Autowired private UserRepository userRepository;
+    @Autowired private PasswordEncoder passwordEncoder;
+
+    @PersistenceContext private EntityManager em;
 
     private String token;
     private JsonNode me;
@@ -57,18 +67,58 @@ class FarmerRestControllerTest {
                 .andReturn().getResponse().getContentAsString();
 
         me = objectMapper.readTree(body);
-
-        String auth = mockMvc.perform(post("/api/auth/authenticate")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(json(new AuthenticationRequestDTO(USERNAME, PASSWORD))))
-                .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString();
-
-        token = "Bearer " + objectMapper.readTree(auth).get("token").asText();
+        token = tokenFor(USERNAME);
     }
 
     private String json(Object o) throws Exception {
         return objectMapper.writeValueAsString(o);
+    }
+
+    private String tokenFor(String username) throws Exception {
+        String body = mockMvc.perform(post("/api/auth/authenticate")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json(new AuthenticationRequestDTO(username, PASSWORD))))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        return "Bearer " + objectMapper.readTree(body).get("token").asText();
+    }
+
+    private void registerFarmer(String username, String vat, String lastname) throws Exception {
+        FarmerInsertDTO dto = FarmerInsertDTO.builder()
+                .registryNumber(vat).phone("6912345678")
+                .userInsertDTO(UserInsertDTO.builder()
+                        .firstname("Ελένη").lastname(lastname)
+                        .username(username).password(PASSWORD).vat(vat)
+                        .build())
+                .build();
+
+        mockMvc.perform(post("/api/farmers")
+                        .contentType(MediaType.APPLICATION_JSON).content(json(dto)))
+                .andExpect(status().isCreated());
+    }
+
+    private String adminToken() throws Exception {
+        Capability manageUsers = new Capability();
+        manageUsers.setName("MANAGE_USERS");
+        em.persist(manageUsers);
+
+        Role adminRole = new Role();
+        adminRole.setName("ADMIN");
+        adminRole.getCapabilities().add(manageUsers);
+        roleRepository.save(adminRole);
+
+        User admin = new User();
+        admin.setFirstname("Διαχειριστής");
+        admin.setLastname("Συστήματος");
+        admin.setUsername(ADMIN);
+        admin.setPassword(passwordEncoder.encode(PASSWORD));
+        admin.setVat("999999999");
+        admin.setIsActive(true);
+        admin.setRole(adminRole);
+        userRepository.save(admin);
+
+        return tokenFor(ADMIN);
     }
 
     private FarmerUpdateDTO updateDTO(String password, String phone) {
@@ -117,6 +167,37 @@ class FarmerRestControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json(new AuthenticationRequestDTO(USERNAME, PASSWORD))))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("Ο διαχειριστής βλέπει τους εγγεγραμμένους αγρότες με σελιδοποίηση")
+    void theAdminListsTheRegisteredFarmers() throws Exception {
+        registerFarmer(OTHER, "987654321", "Μανωλάκη");
+        String adminToken = adminToken();
+
+        mockMvc.perform(get("/api/farmers")
+                        .header("Authorization", adminToken)
+                        .param("sortBy", "user.lastname"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalElements").value(2))
+                .andExpect(jsonPath("$.currentPage").value(0))
+                .andExpect(jsonPath("$.data[0].userReadOnlyDTO.lastname").value("Μανωλάκη"))
+                .andExpect(jsonPath("$.data[0].userReadOnlyDTO.password").doesNotExist());
+
+        mockMvc.perform(get("/api/farmers")
+                        .header("Authorization", adminToken)
+                        .param("lastname", "μανωλ"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalElements").value(1))
+                .andExpect(jsonPath("$.data[0].userReadOnlyDTO.username").value(OTHER));
+    }
+
+    @Test
+    @DisplayName("Ο αγρότης δεν βλέπει τη λίστα των υπόλοιπων αγροτών")
+    void aFarmerCannotListTheOtherFarmers() throws Exception {
+        mockMvc.perform(get("/api/farmers").header("Authorization", token))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.code").value("UserNotAuthorized"));
     }
 
     @Test
