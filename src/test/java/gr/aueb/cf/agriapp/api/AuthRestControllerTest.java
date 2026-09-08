@@ -121,7 +121,7 @@ class AuthRestControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json(new AuthenticationRequestDTO(USERNAME, "WrongPass1!"))))
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.description").value("Invalid username or password"));
+                .andExpect(jsonPath("$.description").value("Η σύνδεση δεν ήταν δυνατή με τα στοιχεία που δόθηκαν"));
     }
 
     @Test
@@ -131,7 +131,7 @@ class AuthRestControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json(new AuthenticationRequestDTO("nobody@example.com", PASSWORD))))
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.description").value("Invalid username or password"));
+                .andExpect(jsonPath("$.description").value("Η σύνδεση δεν ήταν δυνατή με τα στοιχεία που δόθηκαν"));
     }
 
     @Test

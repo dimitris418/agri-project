@@ -190,7 +190,7 @@ class FieldActivityRestControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value("ActivityInvalidArgument"))
                 .andExpect(jsonPath("$.description").value(
-                        org.hamcrest.Matchers.containsString("pre-harvest interval")));
+                        org.hamcrest.Matchers.containsString("χρόνος αναμονής")));
     }
 
     @Test

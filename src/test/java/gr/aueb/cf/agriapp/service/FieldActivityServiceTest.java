@@ -198,7 +198,7 @@ class FieldActivityServiceTest {
         AppObjectInvalidArgumentException e = assertThrows(AppObjectInvalidArgumentException.class,
                 () -> fieldActivityService.saveActivity(harvest(tooEarly), OWNER));
 
-        assertTrue(e.getMessage().contains("pre-harvest interval"));
+        assertTrue(e.getMessage().contains("χρόνος αναμονής"));
     }
 
     @Test
