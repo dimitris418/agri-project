@@ -53,7 +53,10 @@ public class AdminAccountInitializer implements ApplicationRunner {
             return;
         }
 
-        if (userRepository.findByUsername(username).isPresent()) return;
+        if (userRepository.findByUsername(username).isPresent()) {
+            log.info("Admin account username={} already exists; skipping creation", username);
+            return;
+        }
 
         Role adminRole = roleRepository.findByName(ADMIN_ROLE).orElse(null);
         if (adminRole == null) {
