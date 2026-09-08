@@ -84,7 +84,7 @@ class FarmerRestControllerTest {
         return "Bearer " + objectMapper.readTree(body).get("token").asText();
     }
 
-    private void registerFarmer(String username, String vat, String lastname) throws Exception {
+    private String registerFarmer(String username, String vat, String lastname) throws Exception {
         FarmerInsertDTO dto = FarmerInsertDTO.builder()
                 .registryNumber(vat).phone("6912345678")
                 .userInsertDTO(UserInsertDTO.builder()
@@ -93,9 +93,16 @@ class FarmerRestControllerTest {
                         .build())
                 .build();
 
-        mockMvc.perform(post("/api/farmers")
+        String body = mockMvc.perform(post("/api/farmers")
                         .contentType(MediaType.APPLICATION_JSON).content(json(dto)))
-                .andExpect(status().isCreated());
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+
+        return objectMapper.readTree(body).get("uuid").asText();
+    }
+
+    private String statusJson(boolean isActive) throws Exception {
+        return json(FarmerStatusUpdateDTO.builder().isActive(isActive).build());
     }
 
     private String adminToken() throws Exception {
@@ -196,6 +203,54 @@ class FarmerRestControllerTest {
     @DisplayName("Ο αγρότης δεν βλέπει τη λίστα των υπόλοιπων αγροτών")
     void aFarmerCannotListTheOtherFarmers() throws Exception {
         mockMvc.perform(get("/api/farmers").header("Authorization", token))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.code").value("UserNotAuthorized"));
+    }
+
+    @Test
+    @DisplayName("Ο διαχειριστής απενεργοποιεί και επαναφέρει λογαριασμό αγρότη")
+    void theAdminDeactivatesAndRestoresAFarmer() throws Exception {
+        String uuid = registerFarmer(OTHER, "987654321", "Μανωλάκη");
+        String adminToken = adminToken();
+
+        mockMvc.perform(patch("/api/farmers/" + uuid + "/status")
+                        .header("Authorization", adminToken)
+                        .contentType(MediaType.APPLICATION_JSON).content(statusJson(false)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.isActive").value(false));
+
+        mockMvc.perform(patch("/api/farmers/" + uuid + "/status")
+                        .header("Authorization", adminToken)
+                        .contentType(MediaType.APPLICATION_JSON).content(statusJson(true)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.isActive").value(true));
+    }
+
+    @Test
+    @DisplayName("Το token απενεργοποιημένου αγρότη παύει να γίνεται δεκτό")
+    void theTokenOfADeactivatedFarmerStopsWorking() throws Exception {
+        String uuid = registerFarmer(OTHER, "987654321", "Μανωλάκη");
+        String farmerToken = tokenFor(OTHER);
+
+        mockMvc.perform(get("/api/farmers/me").header("Authorization", farmerToken))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(patch("/api/farmers/" + uuid + "/status")
+                        .header("Authorization", adminToken())
+                        .contentType(MediaType.APPLICATION_JSON).content(statusJson(false)))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(get("/api/farmers/me").header("Authorization", farmerToken))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.code").value("UserNotAuthenticated"));
+    }
+
+    @Test
+    @DisplayName("Ο αγρότης δεν αλλάζει την κατάσταση κανενός λογαριασμού")
+    void aFarmerCannotChangeAnyAccountStatus() throws Exception {
+        mockMvc.perform(patch("/api/farmers/" + me.get("uuid").asText() + "/status")
+                        .header("Authorization", token)
+                        .contentType(MediaType.APPLICATION_JSON).content(statusJson(false)))
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.code").value("UserNotAuthorized"));
     }
