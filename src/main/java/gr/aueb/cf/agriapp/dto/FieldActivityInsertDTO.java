@@ -15,19 +15,19 @@ import java.time.LocalDate;
 @Builder
 public record FieldActivityInsertDTO(
 
-        @NotNull(message = "Crop is required")
+        @NotNull(message = "Η καλλιέργεια είναι υποχρεωτική")
         String cropUuid,
 
-        @NotNull(message = "Activity date is required")
-        @PastOrPresent(message = "Activity date cannot be in the future")
+        @NotNull(message = "Η ημερομηνία εργασίας είναι υποχρεωτική")
+        @PastOrPresent(message = "Η ημερομηνία εργασίας δεν μπορεί να είναι μελλοντική")
         LocalDate activityDate,
 
-        @NotNull(message = "Activity type is required")
+        @NotNull(message = "Ο τύπος εργασίας είναι υποχρεωτικός")
         ActivityType type,
 
         Long productId,
 
-        @DecimalMin(value = "0.00", message = "Quantity cannot be negative")
+        @DecimalMin(value = "0.00", message = "Η ποσότητα δεν μπορεί να είναι αρνητική")
         BigDecimal quantity,
 
         UnitOfMeasure unit,
@@ -36,6 +36,6 @@ public record FieldActivityInsertDTO(
 
         SeverityLevel severity,
 
-        @Size(max = 500, message = "Notes cannot exceed 500 characters")
+        @Size(max = 500, message = "Οι παρατηρήσεις δεν μπορούν να ξεπερνούν τους 500 χαρακτήρες")
         String notes
 ) {}

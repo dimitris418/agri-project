@@ -10,26 +10,26 @@ import lombok.Builder;
 @Builder
 public record UserUpdateDTO(
 
-        @NotNull(message = "id field is required")
+        @NotNull(message = "Το πεδίο id είναι υποχρεωτικό")
         Long id,
 
-        @NotEmpty(message = "First name is required")
-        @Size(min = 2, max = 50, message = "First name must be between 2 and 50 characters")
+        @NotEmpty(message = "Το όνομα είναι υποχρεωτικό")
+        @Size(min = 2, max = 50, message = "Το όνομα πρέπει να έχει από 2 έως 50 χαρακτήρες")
         String firstname,
 
-        @NotEmpty(message = "Last name is required")
-        @Size(min = 2, max = 50, message = "Last name must be between 2 and 50 characters")
+        @NotEmpty(message = "Το επώνυμο είναι υποχρεωτικό")
+        @Size(min = 2, max = 50, message = "Το επώνυμο πρέπει να έχει από 2 έως 50 χαρακτήρες")
         String lastname,
 
-        @Email(message = "Invalid username")
-        @NotEmpty(message = "Username is required")
+        @Email(message = "Μη έγκυρο όνομα χρήστη")
+        @NotEmpty(message = "Το όνομα χρήστη είναι υποχρεωτικό")
         String username,
 
         @Pattern(regexp = "^(?=.*?[a-z])(?=.*?[A-Z])(?=.*?\\d)(?=.*?[@#$!%&*]).{8,}$",
-                message = "Invalid Password")
+                message = "Μη έγκυρο συνθηματικό")
         String password,
 
-        @NotEmpty(message = "VAT number is required")
-        @Pattern(regexp = "\\d{9}", message = "VAT must be a 9-digit number")
+        @NotEmpty(message = "Το ΑΦΜ είναι υποχρεωτικό")
+        @Pattern(regexp = "\\d{9}", message = "Το ΑΦΜ πρέπει να είναι εννέα ψηφία")
         String vat
 ) {}

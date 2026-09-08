@@ -11,18 +11,18 @@ import java.time.LocalDate;
 @Builder
 public record CropInsertDTO(
 
-        @NotNull(message = "Parcel is required")
+        @NotNull(message = "Το αγροτεμάχιο είναι υποχρεωτικό")
         String parcelUuid,
 
-        @NotNull(message = "Crop type is required")
+        @NotNull(message = "Το είδος καλλιέργειας είναι υποχρεωτικό")
         Long cropTypeId,
 
-        @Size(max = 50, message = "Variety cannot exceed 50 characters")
+        @Size(max = 50, message = "Η ποικιλία δεν μπορεί να ξεπερνά τους 50 χαρακτήρες")
         String variety,
 
-        @NotNull(message = "Cultivation year is required")
-        @Min(value = 2000, message = "Cultivation year is out of range")
-        @Max(value = 2100, message = "Cultivation year is out of range")
+        @NotNull(message = "Η καλλιεργητική περίοδος είναι υποχρεωτική")
+        @Min(value = 2000, message = "Η καλλιεργητική περίοδος είναι εκτός εύρους")
+        @Max(value = 2100, message = "Η καλλιεργητική περίοδος είναι εκτός εύρους")
         Integer cultivationYear,
 
         LocalDate plantingDate,

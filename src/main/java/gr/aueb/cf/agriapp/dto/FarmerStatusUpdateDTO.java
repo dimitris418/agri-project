@@ -6,6 +6,6 @@ import lombok.Builder;
 @Builder
 public record FarmerStatusUpdateDTO(
 
-        @NotNull(message = "isActive field is required")
+        @NotNull(message = "Το πεδίο isActive είναι υποχρεωτικό")
         Boolean isActive
 ) {}

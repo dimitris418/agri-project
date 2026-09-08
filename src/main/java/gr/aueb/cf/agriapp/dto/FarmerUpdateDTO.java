@@ -8,22 +8,22 @@ import lombok.Builder;
 @Builder
 public record FarmerUpdateDTO(
 
-        @NotNull(message = "id field is required")
+        @NotNull(message = "Το πεδίο id είναι υποχρεωτικό")
         Long id,
 
-        @NotNull(message = "uuid field is required")
+        @NotNull(message = "Το πεδίο uuid είναι υποχρεωτικό")
         String uuid,
 
-        @Pattern(regexp = "\\d{0,20}", message = "Registry number must be numeric")
+        @Pattern(regexp = "\\d{0,20}", message = "Ο αριθμός μητρώου πρέπει να περιέχει μόνο ψηφία")
         String registryNumber,
 
-        @Pattern(regexp = "^$|^\\d{10}$", message = "Phone must be a 10-digit number")
+        @Pattern(regexp = "^$|^\\d{10}$", message = "Το τηλέφωνο πρέπει να είναι δέκα ψηφία")
         String phone,
 
-        @NotNull(message = "isActive field is required")
+        @NotNull(message = "Το πεδίο isActive είναι υποχρεωτικό")
         Boolean isActive,
 
         @Valid
-        @NotNull(message = "User details are required")
+        @NotNull(message = "Τα στοιχεία του χρήστη είναι υποχρεωτικά")
         UserUpdateDTO userUpdateDTO
 ) {}

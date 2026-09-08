@@ -8,13 +8,13 @@ import lombok.Builder;
 @Builder
 public record FarmerInsertDTO(
 
-        @Pattern(regexp = "\\d{0,20}", message = "Registry number must be numeric")
+        @Pattern(regexp = "\\d{0,20}", message = "Ο αριθμός μητρώου πρέπει να περιέχει μόνο ψηφία")
         String registryNumber,
 
-        @Pattern(regexp = "^$|^\\d{10}$", message = "Phone must be a 10-digit number")
+        @Pattern(regexp = "^$|^\\d{10}$", message = "Το τηλέφωνο πρέπει να είναι δέκα ψηφία")
         String phone,
 
         @Valid
-        @NotNull(message = "User details are required")
+        @NotNull(message = "Τα στοιχεία του χρήστη είναι υποχρεωτικά")
         UserInsertDTO userInsertDTO
 ) {}

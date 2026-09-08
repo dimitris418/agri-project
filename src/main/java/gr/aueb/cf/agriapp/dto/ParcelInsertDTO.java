@@ -12,19 +12,19 @@ import java.math.BigDecimal;
 @Builder
 public record ParcelInsertDTO(
 
-        @NotEmpty(message = "Parcel name is required")
-        @Size(min = 2, max = 100, message = "Parcel name must be between 2 and 100 characters")
+        @NotEmpty(message = "Η ονομασία του αγροτεμαχίου είναι υποχρεωτική")
+        @Size(min = 2, max = 100, message = "Η ονομασία του αγροτεμαχίου πρέπει να έχει από 2 έως 100 χαρακτήρες")
         String name,
 
         Long regionalUnitId,
 
-        @NotNull(message = "Area is required")
-        @DecimalMin(value = "0.01", message = "Area must be greater than zero")
+        @NotNull(message = "Η έκταση είναι υποχρεωτική")
+        @DecimalMin(value = "0.01", message = "Η έκταση πρέπει να είναι μεγαλύτερη από μηδέν")
         BigDecimal areaInStremmas,
 
-        @Pattern(regexp = "^$|^\\d{12}$", message = "KAEK must be a 12-digit number")
+        @Pattern(regexp = "^$|^\\d{12}$", message = "Ο ΚΑΕΚ πρέπει να είναι δώδεκα ψηφία")
         String kaek,
 
-        @NotNull(message = "isActive field is required")
+        @NotNull(message = "Το πεδίο isActive είναι υποχρεωτικό")
         Boolean isActive
 ) {}

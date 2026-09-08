@@ -4,9 +4,9 @@ import jakarta.validation.constraints.NotEmpty;
 
 public record AuthenticationRequestDTO(
 
-        @NotEmpty(message = "Username is required")
+        @NotEmpty(message = "Το όνομα χρήστη είναι υποχρεωτικό")
         String username,
 
-        @NotEmpty(message = "Password is required")
+        @NotEmpty(message = "Το συνθηματικό είναι υποχρεωτικό")
         String password
 ) {}
