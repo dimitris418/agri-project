@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -57,6 +58,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 if (!jwtService.isTokenValid(jwt, userDetails)) {
                     throw new BadCredentialsException("Invalid token");
+                }
+
+                // Το token είναι stateless και ζει έως τρεις ώρες. Χωρίς αυτόν
+                // τον έλεγχο ένας απενεργοποιημένος λογαριασμός θα συνέχιζε να
+                // δουλεύει μέχρι να λήξει.
+                if (!userDetails.isEnabled()) {
+                    rejectWith(request, response, new DisabledException("Account is disabled"));
+                    return;
                 }
 
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
