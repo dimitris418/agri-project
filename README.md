@@ -71,7 +71,24 @@ Hibernate δημιουργήσει τους πίνακες.
 | `MYSQL_USER`, `MYSQL_PASSWORD` | `agriuser`, μη λειτουργική τιμή |
 | `JWT_SECRET` | κλειδί ανάπτυξης· **απαιτείται override εκτός localhost** |
 | `JWT_EXPIRATION` | `10800000` (3 ώρες) |
+| `ADMIN_USERNAME`, `ADMIN_PASSWORD`, `ADMIN_VAT` | κενές· χωρίς αυτές δεν δημιουργείται διαχειριστής |
 | `app.cors.allowed-origins` | `http://localhost:4200` |
+
+### Λογαριασμός διαχειριστή
+
+Η εγγραφή μέσω του API δίνει πάντα ρόλο `FARMER`, οπότε ο πρώτος `ADMIN` δεν
+μπορεί να προκύψει από αυτήν. Ο `AdminAccountInitializer` τον δημιουργεί στην
+εκκίνηση, μία φορά, εφόσον δοθούν και οι τρεις μεταβλητές και ο χρήστης δεν
+υπάρχει ήδη:
+
+```bash
+export ADMIN_USERNAME=admin@example.com
+export ADMIN_PASSWORD='...'
+export ADMIN_VAT=999999999
+```
+
+Έτσι κανένα συνθηματικό -- ούτε το hash του -- δεν μπαίνει στο repository. Αν οι
+μεταβλητές λείπουν, η εφαρμογή ξεκινά κανονικά χωρίς διαχειριστή.
 
 ## Εκτέλεση
 
@@ -136,6 +153,7 @@ http://localhost:8080/swagger-ui/index.html
 | POST | `/api/farmers` | — (δημόσιο) |
 | POST | `/api/auth/authenticate` | — (δημόσιο) |
 | GET, PUT | `/api/farmers/me` | αυθεντικοποίηση |
+| GET | `/api/farmers` | `MANAGE_USERS` |
 | GET | `/api/lookups/{crop-types,products,pests,regional-units}` | αυθεντικοποίηση |
 | GET | `/api/parcels`, `/api/crops`, `/api/activities` | `VIEW_REPORTS` |
 | POST, PUT, DELETE | `/api/parcels`, `/api/crops` | `MANAGE_PARCELS` |
@@ -166,9 +184,10 @@ gr.aueb.cf.agriapp
 ├── mapper            DTO <-> entity
 ├── model
 │   ├── auth          Role, Capability
-│   └── static_data   CropType, Product, Pest
+│   └── static_data   CropType, Product, Pest, Region, RegionalUnit
 ├── repository        Spring Data interfaces
-├── security          SecurityConfiguration, JwtAuthenticationFilter, 401/403
+├── security          SecurityConfiguration, JwtAuthenticationFilter, 401/403,
+│                      AdminAccountInitializer
 └── service           interface + υλοποίηση ανά entity
 ```
 
@@ -265,6 +284,20 @@ DTO εισόδου — τα ορίζει το service από τον αυθεντ
 παραμένουν ανακτήσιμες. Η καλλιέργεια διαγράφεται πραγματικά, αλλά μόνο όσο
 δεν έχει καμία εγγραφή στο ημερολόγιο.
 
+**Ο διαχειριστής βλέπει, δεν επεμβαίνει.** Ο ρόλος `ADMIN` έχει `MANAGE_USERS`
+και `VIEW_REPORTS`, και το μόνο διαχειριστικό endpoint είναι το `GET
+/api/farmers`: λίστα των εγγεγραμμένων αγροτών με σελιδοποίηση, ταξινόμηση και
+φιλτράρισμα. Δεν δημιουργεί, δεν τροποποιεί και δεν διαγράφει λογαριασμούς --
+τα στοιχεία του τα αλλάζει ο ίδιος ο αγρότης από το `PUT /api/farmers/me`.
+
+**Ο διαχειριστής δεν είναι αγρότης.** Δεν έχει εγγραφή στον πίνακα `farmers`,
+οπότε τα endpoints των αγροτεμαχίων, των καλλιεργειών και του ημερολογίου δεν
+έχουν νόημα γι' αυτόν: αν και του επιτρέπονται μέσω του `VIEW_REPORTS`, θα
+επέστρεφαν `FarmerNotFound`. Το front-end εμφανίζει διαφορετικό μενού ανά ρόλο
+ώστε να μη φτάνει ποτέ εκεί. Ο έλεγχος στο front-end γίνεται με βάση τον ρόλο
+και αφορά μόνο τη δρομολόγηση· η εξουσιοδότηση επιβάλλεται στο back-end με βάση
+τα capabilities.
+
 ## Γνωστοί περιορισμοί
 
 **Οι χρόνοι αναμονής είναι ενδεικτικοί.** Οι τιμές του `products.sql` δεν
@@ -282,5 +315,6 @@ DTO εισόδου — τα ορίζει το service από τον αυθεντ
 θα απαιτούσε πίνακα συσχέτισης `product_crop_intervals`. Η απλοποίηση
 επιλέχθηκε συνειδητά, δεδομένου ότι ο κατάλογος είναι ήδη επιδεικτικός.
 
-**Δεν υπάρχει διαχειριστικό περιβάλλον.** Ο ρόλος `ADMIN` υπάρχει στο σχήμα με
-τα δικαιώματά του, αλλά δεν εκτίθενται endpoints γι' αυτόν.
+**Ο διαχειριστής δεν μπορεί να απενεργοποιήσει λογαριασμό.** Ο πίνακας
+`farmers` έχει `is_active` και η λίστα το εμφανίζει, αλλά δεν εκτίθεται
+endpoint που να το αλλάζει: θα ήταν η πρώτη προσθήκη σε επόμενη έκδοση.
